@@ -1,6 +1,8 @@
 # Shape2SqlServer
 Easy and fast shape file import to MS SQL Server
 
+Current release : V1.0 : https://github.com/xfischer/Shape2SqlServer/releases
+
 Inspired from the great tool http://www.sharpgis.net/page/Shape2SQL by Morten Nielsen @dotMorten.
 This tool is great but Morten does not gives source code.
 
