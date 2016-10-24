@@ -8,7 +8,7 @@ using System.Text;
 using System.Windows.Forms;
 using MapBind.IO.CoordinateSystem;
 
-namespace MapBind.ShapeFileToSqlServer
+namespace MapBind.Shape2SqlServer
 {
 	public partial class frmSRIDSelector : Form
 	{

@@ -1,4 +1,4 @@
-﻿namespace MapBind.ShapeFileToSqlServer
+﻿namespace MapBind.Shape2SqlServer
 {
 	partial class frmSRIDSelector
 	{

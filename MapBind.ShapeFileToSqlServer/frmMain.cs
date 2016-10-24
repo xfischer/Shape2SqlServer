@@ -19,7 +19,7 @@ using NetTopologySuite.IO;
 using GeoAPI.Geometries;
 using NetTopologySuite.Geometries;
 using NetTopologySuite.CoordinateSystems.Transformations;
-using MapBind.ShapeFileToSqlServer.Properties;
+using MapBind.Shape2SqlServer.Properties;
 using MapBind.IO;
 using MapBind.IO.ShapeFile;
 using Microsoft.Data.ConnectionUI;
@@ -27,7 +27,7 @@ using MapBind.IO.Utils;
 using MapBind.Data.Models.SqlServer;
 using MapBind.IO.CoordinateSystem;
 
-namespace MapBind.ShapeFileToSqlServer
+namespace MapBind.Shape2SqlServer
 {
 	public partial class frmMain : Form
 	{
@@ -44,9 +44,9 @@ namespace MapBind.ShapeFileToSqlServer
 
 		private void InitTracing()
 		{
-			File.Delete("MapBind.ShapeFileToSqlServer.shared.log");
+			File.Delete("MapBind.Shape2SqlServer.shared.log");
 			MapBindTrace.Source.Listeners.Clear();
-			TextWriterTraceListener txtListener = new TextWriterTraceListener("MapBind.ShapeFileToSqlServer.shared.log", "MapBind.ShapeFileToSqlServer.TraceListener");
+			TextWriterTraceListener txtListener = new TextWriterTraceListener("MapBind.Shape2SqlServer.shared.log", "MapBind.Shape2SqlServer.TraceListener");
 			MapBindTrace.Source.Switch.Level = SourceLevels.All;
 			MapBindTrace.Source.Listeners.Remove("Default");
 			MapBindTrace.Source.Listeners.Add(txtListener);

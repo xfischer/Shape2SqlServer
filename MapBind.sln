@@ -13,7 +13,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapBind.Data", "MapBind.Dat
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapBind.IO", "MapBind.IO\MapBind.IO.csproj", "{9E8B1F9F-A74F-4CB8-86A4-442DE63B6287}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapBind.ShapeFileToSqlServer", "MapBind.ShapeFileToSqlServer\MapBind.ShapeFileToSqlServer.csproj", "{60E32081-9A58-40A4-B57F-C1F1033334A5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapBind.Shape2SqlServer", "MapBind.ShapeFileToSqlServer\MapBind.Shape2SqlServer.csproj", "{60E32081-9A58-40A4-B57F-C1F1033334A5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
