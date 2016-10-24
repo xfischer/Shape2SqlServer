@@ -9,3 +9,12 @@ I have rewritten it. It features :
 - Reprojection
 - Support for geometry and geography
 - Spatial index creation
+
+
+# NuGet packages dependencies
+Thanks to
+- GeoAPI
+- ProjNet
+- NetTopologySuite
+- NetTopologySuite.IO.GeoTools
+- NetTopologySuite.IO.MsSqlSpatial
