@@ -15,10 +15,14 @@ I have rewritten it. It features :
 - Spatial index creation
 
 
-# NuGet packages dependencies
-Thanks to
+# Depends on :
+## NuGet packages
 - GeoAPI
 - ProjNet
 - NetTopologySuite
 - NetTopologySuite.IO.GeoTools
 - NetTopologySuite.IO.MsSqlSpatial
+
+## Other components
+- Microsoft.Data.ConnectionUI
+- Microsoft.Data.ConnectionUI.Dialog
