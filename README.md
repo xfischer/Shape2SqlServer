@@ -1,4 +1,4 @@
-# Shape2SqlServer
+# Shape2SqlServer [![Build status](https://ci.appveyor.com/api/projects/status/github/xfischer/Shape2SqlServer)](https://ci.appveyor.com/project/xfischer/Shape2SqlServer)
 Easy and fast shape file import to MS SQL Server
 
  ![Viewer](/images/Screenshot.PNG?raw=true "Shape2SqlServer")
