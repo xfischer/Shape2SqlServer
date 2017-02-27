@@ -662,9 +662,12 @@ namespace MapBind.IO.ShapeFile
 
 			// REVERSE
 			SqlServerHelper.REVERSE_GEOMETRIES = null;
+            
+            // construct Sql table name
+            _tableName = SqlServerModel.CleanSQLName(Path.GetFileNameWithoutExtension(_shapeFile));
 
-			// Init reader
-			using (ShapefileDataReader reader = new ShapefileDataReader(_shapeFile, GeometryFactory.Default))
+            // Init reader
+            using (ShapefileDataReader reader = new ShapefileDataReader(_shapeFile, GeometryFactory.Default))
 			{
 				// Get Shape info
 				_bounds = reader.ShapeHeader.Bounds;
@@ -681,8 +684,7 @@ namespace MapBind.IO.ShapeFile
 				_geomField = SqlServerModel.GenerateUniqueColName("geom", ShapeFileHelper.TranslateDbfTypesToSql(reader.DbaseHeader.Fields), _tableName);
 			}
 
-			// construct Sql table name
-			_tableName = SqlServerModel.CleanSQLName(Path.GetFileNameWithoutExtension(_shapeFile));
+			
 
 		}
 
