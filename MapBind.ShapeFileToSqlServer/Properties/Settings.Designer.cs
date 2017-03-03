@@ -130,5 +130,17 @@ namespace MapBind.Shape2SqlServer.Properties {
                 this["safeMode"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("dbo")]
+        public string schema {
+            get {
+                return ((string)(this["schema"]));
+            }
+            set {
+                this["schema"] = value;
+            }
+        }
     }
 }

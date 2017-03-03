@@ -113,6 +113,7 @@ namespace MapBind.IO.ShapeFile
 																enSpatialType spatialType,
 																int SRID,
 																string tableName,
+                                                                string schema,
 																string IdColName,
 																string geomcolName,
 																List<string> fieldsToImport)
@@ -171,7 +172,7 @@ namespace MapBind.IO.ShapeFile
 								List<SqlColumnDescriptor> sqlFields = ShapeFileHelper.TranslateDbfTypesToSql(fields);
 
 								MapBindTrace.Source.TraceEvent(TraceEventType.Information, 1, "Create SQL table " + tableName);
-								string sqlScriptCreateTable = SqlServerModel.GenerateCreateTableScript(tableName, sqlFields, spatialType, recreateTable, geomcolName, IdColName);
+								string sqlScriptCreateTable = SqlServerModel.GenerateCreateTableScript(tableName, schema, sqlFields, spatialType, recreateTable, geomcolName, IdColName);
 								DataTable dataTable = SqlServerModel.GenerateDataTable(tableName, sqlFields, spatialType, recreateTable, geomcolName, IdColName);
 								new SqlCommand(sqlScriptCreateTable, db, transaction).ExecuteNonQuery();
 
@@ -361,7 +362,7 @@ namespace MapBind.IO.ShapeFile
 									_worker.ReportProgress(100, "Creating index...");
 
 									// Create spatial index
-									string sqlScriptCreateIndex = SqlServerModel.GenerateCreateSpatialIndexScript(tableName, geomcolName, SqlServerHelper.GetBoundingBox(this.Bounds), spatialType, enSpatialIndexGridDensity.MEDIUM);
+									string sqlScriptCreateIndex = SqlServerModel.GenerateCreateSpatialIndexScript(tableName, schema, geomcolName, SqlServerHelper.GetBoundingBox(this.Bounds), spatialType, enSpatialIndexGridDensity.MEDIUM);
 									SqlCommand v_createdIndexcmd = new SqlCommand(sqlScriptCreateIndex, db, transaction);
 									v_createdIndexcmd.CommandTimeout = 3600;
 									v_createdIndexcmd.ExecuteNonQuery();
@@ -412,8 +413,9 @@ namespace MapBind.IO.ShapeFile
 																bool recreateTable,
 																enSpatialType spatialType,
 																int SRID,
-																string tableName,
-																string IdColName,
+                                                                string tableName,
+                                                                string schema,
+                                                                string IdColName,
 																string geomcolName,
 																List<string> fieldsToImport)
 		{
@@ -510,7 +512,7 @@ namespace MapBind.IO.ShapeFile
 									List<SqlColumnDescriptor> sqlFields = ShapeFileHelper.TranslateDbfTypesToSql(fieldsList.ToArray());
 
 									MapBindTrace.Source.TraceEvent(TraceEventType.Information, 1, "Creating table " + tableName);
-									string sqlScriptCreateTable = SqlServerModel.GenerateCreateTableScript(tableName, sqlFields, spatialType, recreateTable, geomcolName, IdColName);
+									string sqlScriptCreateTable = SqlServerModel.GenerateCreateTableScript(tableName, schema, sqlFields, spatialType, recreateTable, geomcolName, IdColName);
 									DataTable dataTable = SqlServerModel.GenerateDataTable(tableName, sqlFields, spatialType, recreateTable, geomcolName, IdColName);
 									new SqlCommand(sqlScriptCreateTable, db, transaction).ExecuteNonQuery();
 									#endregion
@@ -549,7 +551,7 @@ namespace MapBind.IO.ShapeFile
 
 										// Create spatial index
 										Envelope bounds = ShapeFileHelper.ReprojectEnvelope(_transform, this.Bounds);
-										string sqlScriptCreateIndex = SqlServerModel.GenerateCreateSpatialIndexScript(tableName, geomcolName, SqlServerHelper.GetBoundingBox(bounds), spatialType, enSpatialIndexGridDensity.MEDIUM);
+										string sqlScriptCreateIndex = SqlServerModel.GenerateCreateSpatialIndexScript(tableName, schema, geomcolName, SqlServerHelper.GetBoundingBox(bounds), spatialType, enSpatialIndexGridDensity.MEDIUM);
 										SqlCommand v_createdIndexcmd = new SqlCommand(sqlScriptCreateIndex, db, transaction);
 										v_createdIndexcmd.CommandTimeout = 3600;
 										v_createdIndexcmd.ExecuteNonQuery();

@@ -147,7 +147,7 @@ namespace MapBind.Shape2SqlServer
 
 		private void LoadSettings()
 		{
-			this.InitIHM_ShapeFile(Properties.Settings.Default.shapeFile);
+            this.InitIHM_ShapeFile(Properties.Settings.Default.shapeFile);
 			txtConString.Text = Properties.Settings.Default.connectionString;
 			txtCoordSys.Text = Properties.Settings.Default.coordSys;
 			chkDrop.Checked = Properties.Settings.Default.dropTable;
@@ -155,6 +155,7 @@ namespace MapBind.Shape2SqlServer
 			chkSafeMode.Checked = Properties.Settings.Default.safeMode;
 			chkSRID.Checked = Properties.Settings.Default.setSRID;
 			txtSrid.Text = Properties.Settings.Default.SRID;
+            txtSchema.Text = Properties.Settings.Default.schema;
 			switch ((enSpatialType)Properties.Settings.Default.useGeography)
 			{
 				case enSpatialType.both: radBoth.Checked = true; break;
@@ -173,7 +174,8 @@ namespace MapBind.Shape2SqlServer
 			Properties.Settings.Default.safeMode = chkSafeMode.Checked;
 			Properties.Settings.Default.setSRID = chkSRID.Checked;
 			Properties.Settings.Default.SRID = txtSrid.Text;
-			Properties.Settings.Default.useGeography = radGeog.Checked ? (int)enSpatialType.geography : radGeom.Checked ? (int)enSpatialType.geometry : (int)enSpatialType.both;
+            Properties.Settings.Default.schema = txtSchema.Text;
+            Properties.Settings.Default.useGeography = radGeog.Checked ? (int)enSpatialType.geography : radGeom.Checked ? (int)enSpatialType.geometry : (int)enSpatialType.both;
 			Properties.Settings.Default.Save();
 		}
 
@@ -287,7 +289,7 @@ namespace MapBind.Shape2SqlServer
 					chkDrop.Checked,
 					radGeog.Checked ? enSpatialType.geography : radGeom.Checked ? enSpatialType.geometry : enSpatialType.both,
 					chkSRID.Checked ? int.Parse(txtSrid.Text) : 0,
-					txtTableName.Text,
+					txtTableName.Text, txtSchema.Text,
 					txtIDCol.Text,
 					txtGeomCol.Text,
 					selectedFields);
@@ -297,8 +299,8 @@ namespace MapBind.Shape2SqlServer
 						chkDrop.Checked,
 						radGeog.Checked ? enSpatialType.geography : radGeom.Checked ? enSpatialType.geometry : enSpatialType.both,
 						chkSRID.Checked ? int.Parse(txtSrid.Text) : 0,
-						txtTableName.Text,
-						txtIDCol.Text,
+						txtTableName.Text, txtSchema.Text,
+                        txtIDCol.Text,
 						txtGeomCol.Text,
 						selectedFields);
 
