@@ -46,11 +46,17 @@ namespace MapBind.IO
 						}
 
 						MsSql2008GeographyWriter geoWriter = new MsSql2008GeographyWriter();
+						SqlGeography v_geog = null;
 						if (REVERSE_GEOMETRIES.GetValueOrDefault(false))
-							v_ret = geoWriter.WriteGeography(geom.Reverse());
+							v_geog = geoWriter.WriteGeography(geom.Reverse());
 						else
-							v_ret = geoWriter.WriteGeography(geom);
-
+							v_geog = geoWriter.WriteGeography(geom);
+						if (!v_geog.STIsValid().Value)
+						{
+							Trace.TraceWarning(string.Format("Invalid geometry. Must call make valid : {0}", v_geog.IsValidDetailed()));
+							v_geog = v_geog.MakeValid();
+						}
+						v_ret = v_geog;
 					}
 					catch (OutOfMemoryException exMemory)
 					{
@@ -115,7 +121,13 @@ namespace MapBind.IO
 				else
 				{
 					MsSql2008GeometryWriter geoWriter = new MsSql2008GeometryWriter();
-					v_ret = geoWriter.WriteGeometry(geom);
+					SqlGeometry v_retGeom = geoWriter.WriteGeometry(geom);
+					if (!v_retGeom.STIsValid().Value)
+					{
+						Trace.TraceWarning(string.Format("Invalid geometry. Must call make valid : {0}", v_retGeom.IsValidDetailed()));
+						v_retGeom = v_retGeom.MakeValid();
+					}
+					v_ret = v_retGeom;
 					//feature.geomWKT = geoWriter.WriteGeometry(geomOut).ToString();
 				}
 			}

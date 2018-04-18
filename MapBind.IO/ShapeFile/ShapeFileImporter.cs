@@ -113,7 +113,7 @@ namespace MapBind.IO.ShapeFile
 																enSpatialType spatialType,
 																int SRID,
 																string tableName,
-                                                                string schema,
+																																string schema,
 																string IdColName,
 																string geomcolName,
 																List<string> fieldsToImport)
@@ -126,7 +126,7 @@ namespace MapBind.IO.ShapeFile
 			_worker.WorkerReportsProgress = true;
 			_worker.RunWorkerCompleted += new RunWorkerCompletedEventHandler(_worker_RunWorkerCompleted);
 			_worker.ProgressChanged += new ProgressChangedEventHandler(_worker_ProgressChanged);
-			_worker.DoWork += new DoWorkEventHandler(delegate(object sender, DoWorkEventArgs e)
+			_worker.DoWork += new DoWorkEventHandler(delegate (object sender, DoWorkEventArgs e)
 			{
 				try
 				{
@@ -285,7 +285,7 @@ namespace MapBind.IO.ShapeFile
 												}
 
 												break;
-											#endregion
+												#endregion
 
 										}
 
@@ -413,9 +413,9 @@ namespace MapBind.IO.ShapeFile
 																bool recreateTable,
 																enSpatialType spatialType,
 																int SRID,
-                                                                string tableName,
-                                                                string schema,
-                                                                string IdColName,
+																																string tableName,
+																																string schema,
+																																string IdColName,
 																string geomcolName,
 																List<string> fieldsToImport)
 		{
@@ -427,7 +427,7 @@ namespace MapBind.IO.ShapeFile
 			_worker.WorkerReportsProgress = true;
 			_worker.RunWorkerCompleted += new RunWorkerCompletedEventHandler(_worker_RunWorkerCompleted);
 			_worker.ProgressChanged += new ProgressChangedEventHandler(_worker_ProgressChanged);
-			_worker.DoWork += new DoWorkEventHandler(delegate(object sender, DoWorkEventArgs e)
+			_worker.DoWork += new DoWorkEventHandler(delegate (object sender, DoWorkEventArgs e)
 			{
 				try
 				{
@@ -616,12 +616,20 @@ namespace MapBind.IO.ShapeFile
 			bool ret = false;
 			try
 			{
-				MapBindTrace.Source.TraceEvent(TraceEventType.Error, 1, string.Format("{0} Index={1}, Attributes={2}, \r\nGeom={3}, \r\nReversedGeom={4}"
-													, ((Exception)args.ExceptionObject).Message
-													, args.ShapeIndex
-													, args.ShapeInfo.Replace("\n", ", ")
-													, args.ShapeGeom.ToString()
-													, args.ShapeGeom.Reverse().ToString()));
+				if (args.ShapeInfo == null)
+				{
+					MapBindTrace.Source.TraceEvent(TraceEventType.Error, 1, string.Format("{0}"
+													, ((Exception)args.ExceptionObject).Message));
+				}
+				else
+				{
+					MapBindTrace.Source.TraceEvent(TraceEventType.Error, 1, string.Format("{0} Index={1}, Attributes={2}, \r\nGeom={3}, \r\nReversedGeom={4}"
+														, ((Exception)args.ExceptionObject).Message
+														, args.ShapeIndex
+														, args.ShapeInfo.Replace("\n", ", ")
+														, args.ShapeGeom.ToString()
+														, args.ShapeGeom.Reverse().ToString()));
+				}
 
 				if (Error != null)
 					Error(this, args);
@@ -664,12 +672,12 @@ namespace MapBind.IO.ShapeFile
 
 			// REVERSE
 			SqlServerHelper.REVERSE_GEOMETRIES = null;
-            
-            // construct Sql table name
-            _tableName = SqlServerModel.CleanSQLName(Path.GetFileNameWithoutExtension(_shapeFile));
 
-            // Init reader
-            using (ShapefileDataReader reader = new ShapefileDataReader(_shapeFile, GeometryFactory.Default))
+			// construct Sql table name
+			_tableName = SqlServerModel.CleanSQLName(Path.GetFileNameWithoutExtension(_shapeFile));
+
+			// Init reader
+			using (ShapefileDataReader reader = new ShapefileDataReader(_shapeFile, GeometryFactory.Default))
 			{
 				// Get Shape info
 				_bounds = reader.ShapeHeader.Bounds;
@@ -686,7 +694,7 @@ namespace MapBind.IO.ShapeFile
 				_geomField = SqlServerModel.GenerateUniqueColName("geom", ShapeFileHelper.TranslateDbfTypesToSql(reader.DbaseHeader.Fields), _tableName);
 			}
 
-			
+
 
 		}
 
