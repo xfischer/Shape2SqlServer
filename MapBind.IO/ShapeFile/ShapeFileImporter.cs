@@ -323,7 +323,8 @@ namespace MapBind.IO.ShapeFile
 									{
 										try
 										{
-											bulk.DestinationTableName = tableName;
+											bulk.DestinationTableName = SqlServerModel.GenerateFullTableName(tableName,schema);
+											bulk.BulkCopyTimeout = 3600; // 1 hour timeout
 											bulk.NotifyAfter = 10;
 											bulk.SqlRowsCopied += (o, args) =>
 											{
@@ -464,7 +465,7 @@ namespace MapBind.IO.ShapeFile
 
 								try
 								{
-									bulk.DestinationTableName = tableName;
+									bulk.DestinationTableName = SqlServerModel.GenerateFullTableName(tableName, schema);
 									bulk.BulkCopyTimeout = 0;
 									bulk.NotifyAfter = 1;
 									bulk.SqlRowsCopied += (o, args) =>

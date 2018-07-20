@@ -11,6 +11,7 @@ using System.Data;
 using System.Collections;
 using MapBind.IO.Utils;
 using MapBind.Data.Models.SqlServer;
+using System.ComponentModel;
 
 namespace MapBind.IO.ShapeFile
 {
@@ -89,7 +90,10 @@ namespace MapBind.IO.ShapeFile
 
 			}
 			else
-				v_ret = _shapeFileDataReader.GetValue(i);
+			{
+				//Type fieldType = _shapeFileDataReader.GetFieldType(i);
+				v_ret = _shapeFileDataReader.GetValue(i);				
+			}
 
 			return v_ret;
 		}
