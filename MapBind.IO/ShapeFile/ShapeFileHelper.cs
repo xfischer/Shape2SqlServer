@@ -1,17 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.IO;
 using NetTopologySuite.Geometries;
 using GeoAPI.CoordinateSystems.Transformations;
 using GeoAPI.Geometries;
 using NetTopologySuite.IO;
 using System.Diagnostics;
-using MapBind.IO.Utils;
-using MapBind.Data.Models.SqlServer;
 
-namespace MapBind.IO.ShapeFile
+namespace Shape2SqlServer.Core
 {
 	internal static class ShapeFileHelper
 	{
@@ -20,7 +17,7 @@ namespace MapBind.IO.ShapeFile
 			try
 			{
 
-				MapBindTrace.Source.TraceInformation("Checking shape files");
+				Shape2SqlServerTrace.Source.TraceInformation("Checking shape files");
 				if (!File.Exists(shapeFileName))
 					throw new ArgumentException("File " + shapeFileName + " not found!");
 
@@ -34,7 +31,7 @@ namespace MapBind.IO.ShapeFile
 			}
 			catch (Exception ex)
 			{
-				MapBindTrace.Source.TraceEvent(TraceEventType.Error, 1, "CheckFiles: " + ex.Message);
+				Shape2SqlServerTrace.Source.TraceEvent(TraceEventType.Error, 1, "CheckFiles: " + ex.Message);
 				throw;
 			}
 

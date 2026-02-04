@@ -78,46 +78,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Business\DataService\DataService.cs" />
-    <Compile Include="Business\DataService\GeometryCache.cs" />
-    <Compile Include="Business\BitmapDataService.cs" />
-    <Compile Include="Business\GeoJsonDataService.cs" />
-    <Compile Include="Business\SqlNativeDataService.cs" />
-    <Compile Include="Models\BingMaps\BingMapsTileSystem.cs" />
-    <Compile Include="Models\CoordinateConverters\CoordinateConverterBase.cs" />
-    <Compile Include="Models\CoordinateConverters\BitmapCoordConverter.cs" />
-    <Compile Include="Models\CoordinateConverters\IdentityCoordinateConverter.cs" />
-    <Compile Include="Models\CoordinateConverters\PrecisionReducerCoordinateConverter.cs" />
-    <Compile Include="Models\GeometryWriter\GDIBitmapGeometryWriter.cs" />
-    <Compile Include="Models\GeometryWriter\GeoJSONGeometryWriter.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Models\GeometryWriter\GeometryWriterBase.cs" />
-    <Compile Include="Models\GeoJSON\GeoJsonConvert.cs" />
-    <Compile Include="Models\GeoJSON\GeoJson.cs" />
-    <Compile Include="Models\GeoJSON\GeoJsonResult.cs" />
-    <Compile Include="Models\GeometryWriter\SqlGeometryWriter.cs" />
-    <Compile Include="Models\Geometry\IGeometry.cs" />
-    <Compile Include="Models\SqlServer\enSpatialIndexGridDensity.cs" />
-    <Compile Include="Models\Style\LayerStyle.cs" />
-    <Compile Include="Models\Geometry\Geometry.cs" />
-    <Compile Include="Models\Metrics.cs" />
-    <Compile Include="Models\Queries\BingTileQuery.cs" />
     <Compile Include="Models\Queries\Common\BoundingBox.cs" />
-    <Compile Include="Models\Queries\BoundingBoxQuery.cs" />
-    <Compile Include="Models\Queries\Common\enDiskCacheMode.cs" />
-    <Compile Include="Models\Queries\Common\QueryBase.cs" />
-    <Compile Include="Models\Queries\TileQuery.cs" />
-    <Compile Include="Models\Queries\WMSQuery.cs" />
-    <Compile Include="Models\Raster\RasterFileSystem.cs" />
-    <Compile Include="Models\Raster\RasterSettings.cs" />
+    <Compile Include="Models\SqlServer\enSpatialIndexGridDensity.cs" />
     <Compile Include="Models\SqlServer\enRingOrientation.cs" />
     <Compile Include="Models\SqlServer\enSpatialType.cs" />
     <Compile Include="Models\SqlServer\SqlColumnDescriptor.cs" />
     <Compile Include="Models\SqlServer\SqlServerModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SqlServerTypes\Loader.cs" />
-    <Compile Include="Utility\Utils.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config">

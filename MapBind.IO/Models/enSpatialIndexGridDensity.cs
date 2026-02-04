@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace MapBind.Data.Models.Geometry
+namespace Shape2SqlServer.Core
 {
-	public interface IGeometry
+	internal enum enSpatialIndexGridDensity
 	{
-		enGeometryType Type { get; }
+		LOW, MEDIUM, HIGH
 	}
 }

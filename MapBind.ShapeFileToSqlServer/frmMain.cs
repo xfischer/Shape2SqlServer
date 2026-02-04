@@ -19,15 +19,10 @@ using NetTopologySuite.IO;
 using GeoAPI.Geometries;
 using NetTopologySuite.Geometries;
 using NetTopologySuite.CoordinateSystems.Transformations;
-using MapBind.Shape2SqlServer.Properties;
-using MapBind.IO;
-using MapBind.IO.ShapeFile;
 using Microsoft.Data.ConnectionUI;
-using MapBind.IO.Utils;
-using MapBind.Data.Models.SqlServer;
-using MapBind.IO.CoordinateSystem;
+using Shape2SqlServer.Core;
 
-namespace MapBind.Shape2SqlServer
+namespace Shape2SqlServer
 {
 	public partial class frmMain : Form
 	{
@@ -44,18 +39,18 @@ namespace MapBind.Shape2SqlServer
 
 		private void InitTracing()
 		{
-			File.Delete("MapBind.Shape2SqlServer.shared.log");
-			MapBindTrace.Source.Listeners.Clear();
-			TextWriterTraceListener txtListener = new TextWriterTraceListener("MapBind.Shape2SqlServer.shared.log", "MapBind.Shape2SqlServer.TraceListener");
-			MapBindTrace.Source.Switch.Level = SourceLevels.All;
-			MapBindTrace.Source.Listeners.Remove("Default");
-			MapBindTrace.Source.Listeners.Add(txtListener);
+			File.Delete("Shape2SqlServer.Shape2SqlServer.shared.log");
+			Shape2SqlServerTrace.Source.Listeners.Clear();
+			TextWriterTraceListener txtListener = new TextWriterTraceListener("Shape2SqlServer.Shape2SqlServer.shared.log", "Shape2SqlServer.Shape2SqlServer.TraceListener");
+			Shape2SqlServerTrace.Source.Switch.Level = SourceLevels.All;
+			Shape2SqlServerTrace.Source.Listeners.Remove("Default");
+			Shape2SqlServerTrace.Source.Listeners.Add(txtListener);
 			Trace.Listeners.Add(txtListener);
 			Trace.AutoFlush = true;
 
 
 
-			MapBindTrace.Source.TraceInformation("Trace file created on " + DateTime.Now.ToString());
+			Shape2SqlServerTrace.Source.TraceInformation("Trace file created on " + DateTime.Now.ToString());
 		}
 
 		#region User events
@@ -357,7 +352,7 @@ namespace MapBind.Shape2SqlServer
 
 			MessageBox.Show(this, "Shape file imported.", "Done", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-			//MapBindTrace.Source.Close();
+			//Shape2SqlServerTrace.Source.Close();
 		}
 
 		void _importer_ProgressChanged(object sender, ProgressChangedEventArgs e)

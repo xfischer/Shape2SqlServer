@@ -11,13 +11,14 @@ using GeoAPI.Geometries;
 using NetTopologySuite.Geometries;
 using NetTopologySuite.IO;
 using ProjNet.CoordinateSystems.Transformations;
-using MapBind.IO.Utils;
 using System.Diagnostics;
-using MapBind.Data.Models.SqlServer;
 
-namespace MapBind.IO.ShapeFile
+namespace Shape2SqlServer.Core
 {
-	public sealed class ShapeFileImporter
+    /// <summary>
+    /// Handles import of Shape files into SQL Server
+    /// </summary>
+    public sealed class ShapeFileImporter
 	{
 
 		private string _shapeFile;
@@ -26,12 +27,24 @@ namespace MapBind.IO.ShapeFile
 
 		private BackgroundWorker _worker;
 
-		public event EventHandler<ProgressChangedEventArgs> ProgressChanged;
-		public event EventHandler Done;
-		public event EventHandler<ShapeImportExceptionEventArgs> Error;
+        /// <summary>
+        /// Event raised when progress is changed
+        /// </summary>
+        public event EventHandler<ProgressChangedEventArgs> ProgressChanged;
+        /// <summary>
+        /// Event raised when import is done
+        /// </summary>
+        public event EventHandler Done;
+        /// <summary>
+        /// Event raised when an error occurs during import (event args contains useful details)
+        /// </summary>
+        public event EventHandler<ShapeImportExceptionEventArgs> Error;
 
 		#region Properties
 		private string _coordinateSystem;
+		/// <summary>
+		/// Coordinate system used
+		/// </summary>
 		public string CoordinateSystem
 		{
 			get
@@ -49,50 +62,74 @@ namespace MapBind.IO.ShapeFile
 		}
 
 		private string _tableName;
+		/// <summary>
+		/// Destination table
+		/// </summary>
 		public string SqlTableName
 		{
 			get { return _tableName; }
 		}
 
 		private string _idField;
-		public string SqlIDFIeld
+        /// <summary>
+        /// Name of primary key field
+        /// </summary>
+        public string SqlIDFIeld
 		{
 			get { return _idField; }
 		}
 
 		private string _geomField;
+		/// <summary>
+		/// Name of geometry field
+		/// </summary>
 		public string SqlGeomField
 		{
 			get { return _geomField; }
 		}
 
 		private Envelope _bounds;
-		public Envelope Bounds
+        /// <summary>
+        /// Geometric boundarys of the shape file
+        /// </summary>
+        public Envelope Bounds
 		{
 			get { return _bounds; }
 		}
 
 		private ShapeGeometryType _shapeType;
+		/// <summary>
+		/// Shape type
+		/// </summary>
 		public ShapeGeometryType ShapeType
 		{
 			get { return _shapeType; }
 		}
 
 		private int _recordCount;
+		/// <summary>
+		/// Number of records in the shape file
+		/// </summary>
 		public int RecordCount
 		{
 			get { return _recordCount; }
 		}
 
-
-		public Dictionary<string, Type> Fields
+        /// <summary>
+        /// Columns in the shape file
+        /// </summary>
+        public Dictionary<string, Type> Fields
 		{
 			get { return _fields; }
 		}
 
-		#endregion
+        #endregion
 
-		public ShapeFileImporter(string shapeFileName)
+        /// <summary>
+        /// Creates an instance of the ShapeFileImporter from a given shape file
+        /// </summary>
+        /// <param name="shapeFileName">Shapefile to import</param>
+        public ShapeFileImporter(string shapeFileName)
 		{
 			try
 			{
@@ -107,13 +144,26 @@ namespace MapBind.IO.ShapeFile
 			}
 		}
 
-		public void ImportShapeFile(string connectionString,
+        /// <summary>
+        /// Launches import in safe mode (exceptions can be handled)
+        /// </summary>
+        /// <param name="connectionString">Destination database connection string</param>
+        /// <param name="targetCoordSystem">Coordinate system used for reprojection</param>
+        /// <param name="recreateTable">Whether to recreate the destination table</param>
+        /// <param name="spatialType">Spatial type of the geometry</param>
+        /// <param name="SRID">Spatial reference ID</param>
+        /// <param name="tableName">Name of the destination table</param>
+		/// <param name="schema">SQL Server destination schema</param>
+		/// <param name="IdColName">Name of the primary key field</param>
+		/// <param name="fieldsToImport">List of fields to import</param>
+		/// <param name="geomcolName">Name of the geometry column</param>
+        public void ImportShapeFile(string connectionString,
 																string targetCoordSystem,
 																bool recreateTable,
 																enSpatialType spatialType,
 																int SRID,
 																string tableName,
-																																string schema,
+																string schema,
 																string IdColName,
 																string geomcolName,
 																List<string> fieldsToImport)
@@ -132,7 +182,7 @@ namespace MapBind.IO.ShapeFile
 				{
 					#region Work
 
-					MapBindTrace.Source.TraceEvent(TraceEventType.Information, 1, "Worker started");
+					Shape2SqlServerTrace.Source.TraceEvent(TraceEventType.Information, 1, "Worker started");
 					_worker.ReportProgress(0, "Starting...");
 
 					#region Init ICoordinateTransformation
@@ -153,7 +203,7 @@ namespace MapBind.IO.ShapeFile
 					{
 						using (SqlConnection db = new SqlConnection(connectionString))
 						{
-							MapBindTrace.Source.TraceEvent(TraceEventType.Information, 1, "Opening SQL connection");
+							Shape2SqlServerTrace.Source.TraceEvent(TraceEventType.Information, 1, "Opening SQL connection");
 							db.Open();
 
 							SqlTransaction transaction = db.BeginTransaction(IsolationLevel.Serializable);
@@ -171,7 +221,7 @@ namespace MapBind.IO.ShapeFile
 																								 select field).ToArray();
 								List<SqlColumnDescriptor> sqlFields = ShapeFileHelper.TranslateDbfTypesToSql(fields);
 
-								MapBindTrace.Source.TraceEvent(TraceEventType.Information, 1, "Create SQL table " + tableName);
+								Shape2SqlServerTrace.Source.TraceEvent(TraceEventType.Information, 1, "Create SQL table " + tableName);
 								string sqlScriptCreateTable = SqlServerModel.GenerateCreateTableScript(tableName, schema, sqlFields, spatialType, recreateTable, geomcolName, IdColName);
 								DataTable dataTable = SqlServerModel.GenerateDataTable(tableName, sqlFields, spatialType, recreateTable, geomcolName, IdColName);
 								new SqlCommand(sqlScriptCreateTable, db, transaction).ExecuteNonQuery();
@@ -216,7 +266,7 @@ namespace MapBind.IO.ShapeFile
 												}
 												catch (Exception exGeomConvert)
 												{
-													MapBindTrace.Source.TraceData(TraceEventType.Error, 1, "Error Converting geography : ", exGeomConvert);
+													Shape2SqlServerTrace.Source.TraceData(TraceEventType.Error, 1, "Error Converting geography : ", exGeomConvert);
 													var args = new ShapeImportExceptionEventArgs(exGeomConvert, false, shapeDataReader.DumpCurrentRecord(), shapeDataReader.Geometry, numRecord);
 													if (this.Raise_Error(args))
 													{
@@ -239,7 +289,7 @@ namespace MapBind.IO.ShapeFile
 												}
 												catch (Exception exGeomConvert)
 												{
-													MapBindTrace.Source.TraceData(TraceEventType.Error, 1, "Error Converting geometry : ", exGeomConvert);
+													Shape2SqlServerTrace.Source.TraceData(TraceEventType.Error, 1, "Error Converting geometry : ", exGeomConvert);
 													var args = new ShapeImportExceptionEventArgs(exGeomConvert, false, shapeDataReader.DumpCurrentRecord(), shapeDataReader.Geometry, numRecord);
 													if (this.Raise_Error(args))
 													{
@@ -266,7 +316,7 @@ namespace MapBind.IO.ShapeFile
 												}
 												catch (Exception exGeomConvert)
 												{
-													MapBindTrace.Source.TraceData(TraceEventType.Error, 1, "Error Converting geometry or geography : ", exGeomConvert);
+													Shape2SqlServerTrace.Source.TraceData(TraceEventType.Error, 1, "Error Converting geometry or geography : ", exGeomConvert);
 													var args = new ShapeImportExceptionEventArgs(exGeomConvert, false, shapeDataReader.DumpCurrentRecord(), shapeDataReader.Geometry, numRecord);
 													if (this.Raise_Error(args))
 													{
@@ -308,7 +358,7 @@ namespace MapBind.IO.ShapeFile
 									}
 									catch (Exception exGeom)
 									{
-										MapBindTrace.Source.TraceData(TraceEventType.Error, 1, "Error Converting geometry : ", exGeom);
+										Shape2SqlServerTrace.Source.TraceData(TraceEventType.Error, 1, "Error Converting geometry : ", exGeom);
 										this.Raise_Error(new ShapeImportExceptionEventArgs(exGeom, true, shapeDataReader.DumpCurrentRecord(), shapeDataReader.Geometry, numRecord));
 									}
 								}
@@ -341,7 +391,7 @@ namespace MapBind.IO.ShapeFile
 										}
 										catch (OperationAbortedException ex)
 										{
-											MapBindTrace.Source.TraceData(TraceEventType.Error, 1, "Error inserting: ", ex);
+											Shape2SqlServerTrace.Source.TraceData(TraceEventType.Error, 1, "Error inserting: ", ex);
 											bulk.Close();
 										}
 
@@ -352,14 +402,14 @@ namespace MapBind.IO.ShapeFile
 
 								if (_worker.CancellationPending)
 								{
-									MapBindTrace.Source.TraceEvent(TraceEventType.Warning, 1, "Rolling back transaction");
+									Shape2SqlServerTrace.Source.TraceEvent(TraceEventType.Warning, 1, "Rolling back transaction");
 									transaction.Rollback();
 								}
 								else
 								{
 									#region Create spatial index
 
-									MapBindTrace.Source.TraceEvent(TraceEventType.Information, 1, "Create spatial index");
+									Shape2SqlServerTrace.Source.TraceEvent(TraceEventType.Information, 1, "Create spatial index");
 									_worker.ReportProgress(100, "Creating index...");
 
 									// Create spatial index
@@ -370,7 +420,7 @@ namespace MapBind.IO.ShapeFile
 
 									#endregion
 
-									MapBindTrace.Source.TraceEvent(TraceEventType.Information, 1, "Commit transaction");
+									Shape2SqlServerTrace.Source.TraceEvent(TraceEventType.Information, 1, "Commit transaction");
 									transaction.Commit();
 
 								}
@@ -378,16 +428,16 @@ namespace MapBind.IO.ShapeFile
 							}
 							catch (Exception ex)
 							{
-								MapBindTrace.Source.TraceData(TraceEventType.Error, 2, "Error: ", ex);
+								Shape2SqlServerTrace.Source.TraceData(TraceEventType.Error, 2, "Error: ", ex);
 
-								MapBindTrace.Source.TraceEvent(TraceEventType.Warning, 2, "Rolling back transaction");
+								Shape2SqlServerTrace.Source.TraceEvent(TraceEventType.Warning, 2, "Rolling back transaction");
 								transaction.Rollback();
 								if (!this.Raise_Error(new ShapeImportExceptionEventArgs(ex, true)))
 									throw;
 							}
 
 
-							MapBindTrace.Source.TraceEvent(TraceEventType.Verbose, 2, "closing DB");
+							Shape2SqlServerTrace.Source.TraceEvent(TraceEventType.Verbose, 2, "closing DB");
 							db.Close();
 						}
 					}
@@ -395,7 +445,7 @@ namespace MapBind.IO.ShapeFile
 				}
 				catch (Exception ex)
 				{
-					MapBindTrace.Source.TraceData(TraceEventType.Error, 3, "Error: ", ex);
+					Shape2SqlServerTrace.Source.TraceData(TraceEventType.Error, 3, "Error: ", ex);
 
 					this.Raise_Error(new ShapeImportExceptionEventArgs(ex, true));
 
@@ -409,14 +459,27 @@ namespace MapBind.IO.ShapeFile
 
 		}
 
-		public void ImportShapeFile_Direct(string connectionString,
+        /// <summary>
+        /// Launches import in direct mode (faster, but exceptions cannot be handled)
+        /// </summary>
+        /// <param name="connectionString"></param>
+        /// <param name="targetCoordSystem"></param>
+        /// <param name="recreateTable"></param>
+        /// <param name="spatialType"></param>
+        /// <param name="SRID"></param>
+        /// <param name="tableName"></param>
+        /// <param name="schema"></param>
+        /// <param name="IdColName"></param>
+        /// <param name="geomcolName"></param>
+        /// <param name="fieldsToImport"></param>
+        public void ImportShapeFile_Direct(string connectionString,
 																string targetCoordSystem,
 																bool recreateTable,
 																enSpatialType spatialType,
 																int SRID,
-																																string tableName,
-																																string schema,
-																																string IdColName,
+																string tableName,
+																string schema,
+																string IdColName,
 																string geomcolName,
 																List<string> fieldsToImport)
 		{
@@ -433,9 +496,9 @@ namespace MapBind.IO.ShapeFile
 				try
 				{
 					#region Work
-					TraceSource traceSource = new TraceSource("MapBind.IO");
+					TraceSource traceSource = new TraceSource("Shape2SqlServerTrace");
 					int recordIndex = 1;
-					MapBindTrace.Source.TraceEvent(TraceEventType.Information, 1, "Worker started");
+					Shape2SqlServerTrace.Source.TraceEvent(TraceEventType.Information, 1, "Worker started");
 					_worker.ReportProgress(0, "Starting...");
 
 					#region Init ICoordinateTransformation
@@ -479,7 +542,7 @@ namespace MapBind.IO.ShapeFile
 
 									};
 
-									MapBindTrace.Source.TraceEvent(TraceEventType.Information, 1, string.Format("Writing {0} records", 0));
+									Shape2SqlServerTrace.Source.TraceEvent(TraceEventType.Information, 1, string.Format("Writing {0} records", 0));
 									_worker.ReportProgress(0, string.Format("Writing {0} records", 0));
 
 									#region Column mappings
@@ -512,7 +575,7 @@ namespace MapBind.IO.ShapeFile
 									#region create table
 									List<SqlColumnDescriptor> sqlFields = ShapeFileHelper.TranslateDbfTypesToSql(fieldsList.ToArray());
 
-									MapBindTrace.Source.TraceEvent(TraceEventType.Information, 1, "Creating table " + tableName);
+									Shape2SqlServerTrace.Source.TraceEvent(TraceEventType.Information, 1, "Creating table " + tableName);
 									string sqlScriptCreateTable = SqlServerModel.GenerateCreateTableScript(tableName, schema, sqlFields, spatialType, recreateTable, geomcolName, IdColName);
 									DataTable dataTable = SqlServerModel.GenerateDataTable(tableName, sqlFields, spatialType, recreateTable, geomcolName, IdColName);
 									new SqlCommand(sqlScriptCreateTable, db, transaction).ExecuteNonQuery();
@@ -526,11 +589,11 @@ namespace MapBind.IO.ShapeFile
 									catch (OperationAbortedException)
 									{
 										bulkInError = true;
-										MapBindTrace.Source.TraceEvent(TraceEventType.Error, 1, "SqlBulkImport throw OperationAbortedException");
+										Shape2SqlServerTrace.Source.TraceEvent(TraceEventType.Error, 1, "SqlBulkImport throw OperationAbortedException");
 									}
 									catch (Exception exBulk)
 									{
-										MapBindTrace.Source.TraceEvent(TraceEventType.Error, 1, "SqlBulkImport throw Exception" + exBulk.Message);
+										Shape2SqlServerTrace.Source.TraceEvent(TraceEventType.Error, 1, "SqlBulkImport throw Exception" + exBulk.Message);
 										this.Raise_Error(new ShapeImportExceptionEventArgs(exBulk, true, shapeDataReader.DumpCurrentRecord(), shapeDataReader.Geometry, recordIndex));
 										bulkInError = true;
 
@@ -540,14 +603,14 @@ namespace MapBind.IO.ShapeFile
 
 									if (_worker.CancellationPending || bulkInError)
 									{
-										MapBindTrace.Source.TraceEvent(TraceEventType.Warning, 1, "Rolling back transaction");
+										Shape2SqlServerTrace.Source.TraceEvent(TraceEventType.Warning, 1, "Rolling back transaction");
 										transaction.Rollback();
 									}
 									else
 									{
 										#region Create spatial index
 
-										MapBindTrace.Source.TraceEvent(TraceEventType.Information, 1, "Creating spatial index...");
+										Shape2SqlServerTrace.Source.TraceEvent(TraceEventType.Information, 1, "Creating spatial index...");
 										_worker.ReportProgress(100, "Creating index...");
 
 										// Create spatial index
@@ -559,7 +622,7 @@ namespace MapBind.IO.ShapeFile
 
 										#endregion
 
-										MapBindTrace.Source.TraceEvent(TraceEventType.Information, 1, "Commit transaction");
+										Shape2SqlServerTrace.Source.TraceEvent(TraceEventType.Information, 1, "Commit transaction");
 										transaction.Commit();
 
 									}
@@ -567,20 +630,20 @@ namespace MapBind.IO.ShapeFile
 								}
 								catch (Exception ex)
 								{
-									MapBindTrace.Source.TraceEvent(TraceEventType.Error, 1, "Error : " + ex.Message);
-									MapBindTrace.Source.TraceEvent(TraceEventType.Warning, 1, "Rolling back transaction");
+									Shape2SqlServerTrace.Source.TraceEvent(TraceEventType.Error, 1, "Error : " + ex.Message);
+									Shape2SqlServerTrace.Source.TraceEvent(TraceEventType.Warning, 1, "Rolling back transaction");
 									transaction.Rollback();
 									this.Raise_Error(new ShapeImportExceptionEventArgs(ex, true));
 								}
 								finally
 								{
-									MapBindTrace.Source.TraceEvent(TraceEventType.Verbose, 1, "SqlBulkCopy.Close()");
+									Shape2SqlServerTrace.Source.TraceEvent(TraceEventType.Verbose, 1, "SqlBulkCopy.Close()");
 									bulk.Close();
 								}
 							}
 						}
 
-						MapBindTrace.Source.TraceEvent(TraceEventType.Verbose, 1, "db.Close()");
+						Shape2SqlServerTrace.Source.TraceEvent(TraceEventType.Verbose, 1, "db.Close()");
 						db.Close();
 					}
 
@@ -589,7 +652,7 @@ namespace MapBind.IO.ShapeFile
 				}
 				catch (Exception ex)
 				{
-					MapBindTrace.Source.TraceEvent(TraceEventType.Error, 1, "Unhandled exception : " + ex.Message);
+					Shape2SqlServerTrace.Source.TraceEvent(TraceEventType.Error, 1, "Unhandled exception : " + ex.Message);
 					this.Raise_Error(new ShapeImportExceptionEventArgs(ex, true));
 				}
 
@@ -601,7 +664,10 @@ namespace MapBind.IO.ShapeFile
 
 		}
 
-		public void CancelAsync()
+        /// <summary>
+        /// Cancels the import process
+        /// </summary>
+        public void CancelAsync()
 		{
 			_worker.CancelAsync();
 		}
@@ -619,12 +685,12 @@ namespace MapBind.IO.ShapeFile
 			{
 				if (args.ShapeInfo == null)
 				{
-					MapBindTrace.Source.TraceEvent(TraceEventType.Error, 1, string.Format("{0}"
+					Shape2SqlServerTrace.Source.TraceEvent(TraceEventType.Error, 1, string.Format("{0}"
 													, ((Exception)args.ExceptionObject).Message));
 				}
 				else
 				{
-					MapBindTrace.Source.TraceEvent(TraceEventType.Error, 1, string.Format("{0} Index={1}, Attributes={2}, \r\nGeom={3}, \r\nReversedGeom={4}"
+					Shape2SqlServerTrace.Source.TraceEvent(TraceEventType.Error, 1, string.Format("{0} Index={1}, Attributes={2}, \r\nGeom={3}, \r\nReversedGeom={4}"
 														, ((Exception)args.ExceptionObject).Message
 														, args.ShapeIndex
 														, args.ShapeInfo.Replace("\n", ", ")
@@ -656,7 +722,7 @@ namespace MapBind.IO.ShapeFile
 
 		private void _worker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
 		{
-			MapBindTrace.Source.TraceEvent(TraceEventType.Information, 1, "Worker completed");
+			Shape2SqlServerTrace.Source.TraceEvent(TraceEventType.Information, 1, "Worker completed");
 			if (Done != null) Done(this, new EventArgs());
 		}
 
@@ -666,7 +732,7 @@ namespace MapBind.IO.ShapeFile
 
 		private void Init()
 		{
-			MapBindTrace.Source.TraceInformation("Trace started");
+			Shape2SqlServerTrace.Source.TraceInformation("Trace started");
 
 			// Check files
 			ShapeFileHelper.CheckFiles(_shapeFile);
@@ -700,23 +766,6 @@ namespace MapBind.IO.ShapeFile
 		}
 
 		#region ShapeFile Reader converters
-
-		private Polygon transformPolygon(ICoordinateTransformation trans, Polygon polygon)
-		{
-			if (trans == null)
-				return polygon;
-
-			Coordinate[] extRing = this.transformCoordinates(trans, polygon.ExteriorRing.Coordinates);
-
-			List<LinearRing> holes = new List<LinearRing>();
-			foreach (var hole in polygon.Holes)
-			{
-				Coordinate[] holeCoords = this.transformCoordinates(trans, hole.Coordinates);
-				holes.Add(new LinearRing(holeCoords));
-			}
-
-			return new Polygon(new LinearRing(extRing), holes.ToArray());
-		}
 
 		private Coordinate[] transformCoordinates(ICoordinateTransformation trans, Coordinate[] source)
 		{

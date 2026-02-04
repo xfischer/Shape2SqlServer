@@ -3,16 +3,19 @@ using System.IO;
 using ProjNet.Converters.WellKnownText;
 using ProjNet.CoordinateSystems;
 using GeoAPI.CoordinateSystems;
-using System.Resources;
-using System.Reflection;
-using MapBind.IO.Properties;
+using Shape2SqlServer.Core.Properties;
 
-namespace MapBind.IO.CoordinateSystem
+namespace Shape2SqlServer.Core
 {
-	public class SRIDReader
+    /// <summary>
+    /// Helper to read SRID.csv and get coordinate systems.
+    /// </summary>
+    public class SRIDReader
 	{
-
-		public class WKTstring
+        /// <summary>
+        /// Well-known Text string with its SRID
+        /// </summary>
+        public class WKTstring
 		{
 			/// <summary>
 			/// Well-known ID
@@ -23,7 +26,11 @@ namespace MapBind.IO.CoordinateSystem
 			/// </summary>
 			public string WKT;
 
-			public override string ToString()
+            /// <summary>
+            /// String representation
+            /// </summary>
+            /// <returns></returns>
+            public override string ToString()
 			{
 				return WKID.ToString() + ": " + WKT;
 			}

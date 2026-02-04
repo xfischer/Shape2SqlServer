@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 
-namespace MapBind.Shape2SqlServer
+namespace Shape2SqlServer
 {
 	static class Program
 	{

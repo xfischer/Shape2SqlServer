@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+# Visual Studio Version 18
+VisualStudioVersion = 18.2.11415.280 d18.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "90 - Run", "90 - Run", "{3796BFBB-2086-4FA0-B51F-EB3B762CD27E}"
 EndProject
@@ -9,11 +9,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "20 - Services", "20 - Servi
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B915596C-3C97-4D8E-9366-5DC13F5833C1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapBind.Data", "MapBind.Data\MapBind.Data.csproj", "{BDD45A24-3CD2-4192-89B5-223364E2FAC3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shape2SqlServer.Core", "MapBind.IO\Shape2SqlServer.Core.csproj", "{9E8B1F9F-A74F-4CB8-86A4-442DE63B6287}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapBind.IO", "MapBind.IO\MapBind.IO.csproj", "{9E8B1F9F-A74F-4CB8-86A4-442DE63B6287}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapBind.Shape2SqlServer", "MapBind.ShapeFileToSqlServer\MapBind.Shape2SqlServer.csproj", "{60E32081-9A58-40A4-B57F-C1F1033334A5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shape2SqlServer", "MapBind.ShapeFileToSqlServer\Shape2SqlServer.csproj", "{60E32081-9A58-40A4-B57F-C1F1033334A5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,17 +23,6 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{BDD45A24-3CD2-4192-89B5-223364E2FAC3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BDD45A24-3CD2-4192-89B5-223364E2FAC3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BDD45A24-3CD2-4192-89B5-223364E2FAC3}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{BDD45A24-3CD2-4192-89B5-223364E2FAC3}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{BDD45A24-3CD2-4192-89B5-223364E2FAC3}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{BDD45A24-3CD2-4192-89B5-223364E2FAC3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BDD45A24-3CD2-4192-89B5-223364E2FAC3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BDD45A24-3CD2-4192-89B5-223364E2FAC3}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{BDD45A24-3CD2-4192-89B5-223364E2FAC3}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{BDD45A24-3CD2-4192-89B5-223364E2FAC3}.Release|x86.ActiveCfg = Release|Any CPU
-		{BDD45A24-3CD2-4192-89B5-223364E2FAC3}.Release|x86.Build.0 = Release|Any CPU
 		{9E8B1F9F-A74F-4CB8-86A4-442DE63B6287}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9E8B1F9F-A74F-4CB8-86A4-442DE63B6287}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9E8B1F9F-A74F-4CB8-86A4-442DE63B6287}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
@@ -64,8 +51,10 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{BDD45A24-3CD2-4192-89B5-223364E2FAC3} = {543A71D9-101F-474D-AC2F-033605F9EE60}
 		{9E8B1F9F-A74F-4CB8-86A4-442DE63B6287} = {543A71D9-101F-474D-AC2F-033605F9EE60}
 		{60E32081-9A58-40A4-B57F-C1F1033334A5} = {3796BFBB-2086-4FA0-B51F-EB3B762CD27E}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {793BEF3B-6482-4C3A-85E3-63379F369644}
 	EndGlobalSection
 EndGlobal

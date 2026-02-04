@@ -8,8 +8,8 @@
     <ProjectGuid>{60E32081-9A58-40A4-B57F-C1F1033334A5}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MapBind.Shape2SqlServer</RootNamespace>
-    <AssemblyName>MapBind.Shape2SqlServer</AssemblyName>
+    <RootNamespace>Shape2SqlServer</RootNamespace>
+    <AssemblyName>Shape2SqlServer</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
@@ -106,14 +106,6 @@
       <HintPath>..\..\packages\NetTopologySuite.IO.1.13.2\lib\net40-client\NetTopologySuite.IO.GeoTools.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="NetTopologySuite.IO.MsSqlSpatial, Version=1.13.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\NetTopologySuite.IO.1.13.2\lib\net40-client\NetTopologySuite.IO.MsSqlSpatial.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="NetTopologySuite.IO.PostGis, Version=1.13.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\NetTopologySuite.IO.1.13.2\lib\net40-client\NetTopologySuite.IO.PostGis.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="NetTopologySuite.IO.SqlServer2008, Version=1.13.2.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\NetTopologySuite.IO.SqlServer.1.13.2\lib\net40-client\NetTopologySuite.IO.SqlServer2008.dll</HintPath>
       <Private>True</Private>
@@ -173,12 +165,11 @@
     <None Include="app.config">
       <SubType>Designer</SubType>
     </None>
-    <None Include="MapBind.ShapeFileToSqlServer_CléTemporaire.pfx" />
     <None Include="ne_110m_admin_0_countries.zip">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="packages.config" />
-    <None Include="Properties\DataSources\MapBind.IO.CoordinateSystem.SRIDReader.datasource" />
+    <None Include="Properties\DataSources\Shape2SqlServer.Core.SRIDReader.datasource" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -190,13 +181,9 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\MapBind.Data\MapBind.Data.csproj">
-      <Project>{bdd45a24-3cd2-4192-89b5-223364e2fac3}</Project>
-      <Name>MapBind.Data</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\MapBind.IO\MapBind.IO.csproj">
+    <ProjectReference Include="..\MapBind.IO\Shape2SqlServer.Core.csproj">
       <Project>{9e8b1f9f-a74f-4cb8-86a4-442de63b6287}</Project>
-      <Name>MapBind.IO</Name>
+      <Name>Shape2SqlServer.Core</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

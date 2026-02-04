@@ -6,16 +6,12 @@ using GeoAPI.Geometries;
 using System.Text.RegularExpressions;
 using System.Data;
 using Microsoft.SqlServer.Types;
-using System.Data.SqlTypes;
-using System.Globalization;
-using NetTopologySuite.Geometries;
 using System.Diagnostics;
 using NetTopologySuite.IO;
-using MapBind.Data.Models.SqlServer;
-using MapBind.Data.Models;
+using System.Data.SqlTypes;
 
 
-namespace MapBind.IO
+namespace Shape2SqlServer.Core
 {
 	internal static class SqlServerHelper
 	{

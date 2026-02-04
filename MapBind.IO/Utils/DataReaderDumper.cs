@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Data;
 
-namespace MapBind.IO.Utils
+namespace Shape2SqlServer.Core
 {
 	internal static class DataReaderDumper
 	{

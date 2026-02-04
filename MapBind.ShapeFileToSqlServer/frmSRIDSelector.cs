@@ -2,13 +2,11 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
-using System.Drawing;
 using System.Linq;
-using System.Text;
 using System.Windows.Forms;
-using MapBind.IO.CoordinateSystem;
+using Shape2SqlServer.Core;
 
-namespace MapBind.Shape2SqlServer
+namespace Shape2SqlServer
 {
 	public partial class frmSRIDSelector : Form
 	{

@@ -1,4 +1,4 @@
-﻿namespace MapBind.Shape2SqlServer
+﻿namespace Shape2SqlServer
 {
 	partial class frmMain
 	{

@@ -5,12 +5,10 @@ using System.Text;
 using Microsoft.SqlServer.Types;
 using System.Data;
 using System.Globalization;
-using System.Text.RegularExpressions;
-using System.Diagnostics;
 
-namespace MapBind.Data.Models.SqlServer
+namespace Shape2SqlServer.Core
 {
-	public sealed class SqlServerModel
+    internal sealed class SqlServerModel
 	{
 
 		public const string PK_FIELD_NAME_DEFAULT = "ID";
@@ -19,7 +17,7 @@ namespace MapBind.Data.Models.SqlServer
 		public const string GEOMETRY_INDEX_NAME_DEFAULT = "IDX_" + GEOMETRY_FIELD_NAME_DEFAULT;
 		public const string GEOGRAPHY_INDEX_NAME_DEFAULT = "IDX_" + GEOGRAPHY_FIELD_NAME_DEFAULT;
 
-		public static string GenerateCreateTableScript(string tableName, string schema, List<SqlColumnDescriptor> columns, enSpatialType spatialType, bool dropTableIfExists, string geomColName, string idColName)
+        internal static string GenerateCreateTableScript(string tableName, string schema, List<SqlColumnDescriptor> columns, enSpatialType spatialType, bool dropTableIfExists, string geomColName, string idColName)
 		{
 
 			StringBuilder builder = new StringBuilder();
@@ -67,7 +65,7 @@ namespace MapBind.Data.Models.SqlServer
 			return builder.ToString();
 		}
 
-		public static DataTable GenerateDataTable(string tableName, List<SqlColumnDescriptor> columnTypes, enSpatialType spatialType, bool dropTableIfExists, string geomColName, string idColName)
+		internal static DataTable GenerateDataTable(string tableName, List<SqlColumnDescriptor> columnTypes, enSpatialType spatialType, bool dropTableIfExists, string geomColName, string idColName)
 		{
 			DataTable dt = new DataTable(tableName);
 
@@ -151,7 +149,7 @@ namespace MapBind.Data.Models.SqlServer
 					row[i] = obj;
 					i++;
 				}
-				catch (Exception ex)
+				catch (Exception)
 				{
 					//Trace.TraceWarning(ex.Message);
 					row[i] = DBNull.Value;

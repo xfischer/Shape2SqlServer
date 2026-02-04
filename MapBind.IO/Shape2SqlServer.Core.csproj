@@ -8,8 +8,8 @@
     <ProjectGuid>{9E8B1F9F-A74F-4CB8-86A4-442DE63B6287}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MapBind.IO</RootNamespace>
-    <AssemblyName>MapBind.IO</AssemblyName>
+    <RootNamespace>Shape2SqlServer.Core</RootNamespace>
+    <AssemblyName>Shape2SqlServer.Core</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
@@ -22,7 +22,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Debug\MapBind.IO.XML</DocumentationFile>
+    <DocumentationFile>bin\Debug\Shape2SqlServer.Core.xml</DocumentationFile>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -32,7 +32,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\MapBind.IO.XML</DocumentationFile>
+    <DocumentationFile>bin\Release\Shape2SqlServer.Core.xml</DocumentationFile>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
@@ -83,6 +83,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CoordinateSystem\SRIDReader.cs" />
+    <Compile Include="Models\BoundingBox.cs" />
+    <Compile Include="Models\enRingOrientation.cs" />
+    <Compile Include="Models\enSpatialIndexGridDensity.cs" />
+    <Compile Include="Models\enSpatialType.cs" />
+    <Compile Include="Models\SqlColumnDescriptor.cs" />
+    <Compile Include="Models\SqlServerModel.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -95,14 +101,8 @@
     <Compile Include="ShapeFile\ShapeImportExceptionEventArgs.cs" />
     <Compile Include="SqlServerTypes\Loader.cs" />
     <Compile Include="SqlServer\SqlServerHelper.cs" />
-    <Compile Include="TileWorker\TileWorkerEventArgs.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="TileWorker\TileWorkerPool.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Utils\DataReaderDumper.cs" />
-    <Compile Include="Utils\MapBindTrace.cs" />
+    <Compile Include="Utils\Shape2SqlServerTrace.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Resources.resx">
@@ -114,12 +114,6 @@
     <None Include="app.config" />
     <None Include="packages.config" />
     <None Include="Resources\SRID.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\MapBind.Data\MapBind.Data.csproj">
-      <Project>{bdd45a24-3cd2-4192-89b5-223364e2fac3}</Project>
-      <Name>MapBind.Data</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\packages\Microsoft.SqlServer.Types.11.0.2\nativeBinaries\x64\msvcr100.dll">

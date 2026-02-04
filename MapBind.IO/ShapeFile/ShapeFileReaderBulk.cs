@@ -9,11 +9,8 @@ using Microsoft.SqlServer.Types;
 using GeoAPI.Geometries;
 using System.Data;
 using System.Collections;
-using MapBind.IO.Utils;
-using MapBind.Data.Models.SqlServer;
-using System.ComponentModel;
 
-namespace MapBind.IO.ShapeFile
+namespace Shape2SqlServer.Core
 {
 	internal class ShapeFileReaderBulk : IEnumerable, IDataReader, IDataRecord
 	{
