@@ -1,0 +1,14 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="Mixed Platforms" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="Shape2SqlServer.Core/Shape2SqlServer.Core.csproj" Id="9e8b1f9f-a74f-4cb8-86a4-442de63b6287">
+    <Build Solution="Debug|x86" Project="false" />
+  </Project>
+  <Project Path="Shape2SqlServer/Shape2SqlServer.csproj" Id="60e32081-9a58-40a4-b57f-c1f1033334a5">
+    <Platform Solution="*|x86" Project="x86" />
+    <Platform Solution="Release|Mixed Platforms" Project="x86" />
+  </Project>
+</Solution>
