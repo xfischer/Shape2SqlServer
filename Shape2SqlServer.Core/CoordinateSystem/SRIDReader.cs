@@ -1,8 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
-using ProjNet.Converters.WellKnownText;
+using ProjNet;
 using ProjNet.CoordinateSystems;
-using GeoAPI.CoordinateSystems;
 using Shape2SqlServer.Core.Properties;
 
 namespace Shape2SqlServer.Core
@@ -68,14 +67,14 @@ namespace Shape2SqlServer.Core
 		/// </summary>
 		/// <param name="id">EPSG ID</param>
 		/// <returns>Coordinate system, or null if SRID was not found.</returns>
-		public static ICoordinateSystem GetCSbyID(int id)
+		public static CoordinateSystem GetCSbyID(int id)
 		{
 			CoordinateSystemFactory fac = new CoordinateSystemFactory();
 			foreach (WKTstring wkt in GetSRIDs())
 			{
 				if (wkt.WKID == id)
 				{
-					return CoordinateSystemWktReader.Parse(wkt.WKT) as ICoordinateSystem;
+					return fac.CreateFromWkt(wkt.WKT);
 				}
 			}
 			return null;

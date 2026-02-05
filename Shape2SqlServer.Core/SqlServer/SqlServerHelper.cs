@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using GeoAPI.Geometries;
+using NetTopologySuite.Geometries;
 using System.Text.RegularExpressions;
 using System.Data;
 using Microsoft.SqlServer.Types;
@@ -20,7 +20,7 @@ namespace Shape2SqlServer.Core
 		private const double INVALIDGEOM_REDUCE = 0.00000025d;
 		internal static bool? REVERSE_GEOMETRIES = null;
 
-		internal static object ConvertToSqlType(IGeometry geom, int SRID, bool useGeography, int curRowIndex)
+		internal static object ConvertToSqlType(Geometry geom, int SRID, bool useGeography, int curRowIndex)
 		{
 			object v_ret = null;
 			try
@@ -41,12 +41,12 @@ namespace Shape2SqlServer.Core
 								REVERSE_GEOMETRIES = true;
 						}
 
-						MsSql2008GeographyWriter geoWriter = new MsSql2008GeographyWriter();
+						SqlServerBytesWriter geoWriter = new SqlServerBytesWriter();
 						SqlGeography v_geog = null;
 						if (REVERSE_GEOMETRIES.GetValueOrDefault(false))
-							v_geog = geoWriter.WriteGeography(geom.Reverse());
+							v_geog = SqlGeography.Deserialize(new SqlBytes(geoWriter.Write(geom.Reverse())));
 						else
-							v_geog = geoWriter.WriteGeography(geom);
+							v_geog = SqlGeography.Deserialize(new SqlBytes(geoWriter.Write(geom)));
 						if (!v_geog.STIsValid().Value)
 						{
 							Trace.TraceWarning(string.Format("Invalid geometry. Must call make valid : {0}", v_geog.IsValidDetailed()));
@@ -68,8 +68,8 @@ namespace Shape2SqlServer.Core
 
 							Trace.WriteLine(string.Format("Invalid geom #{0} ({1}: {2}). Try to reverse", curRowIndex, exWriteGeom.GetType().Name, exWriteGeom.Message));
 							// Maybe bad orientation
-							MsSql2008GeographyWriter geogWriter = new MsSql2008GeographyWriter();
-							v_ret = geogWriter.WriteGeography(geom.Reverse());
+							SqlServerBytesWriter geogWriter = new SqlServerBytesWriter();
+							v_ret = SqlGeography.Deserialize(new SqlBytes(geogWriter.Write(geom.Reverse())));
 
 							REVERSE_GEOMETRIES = true;
 
@@ -85,8 +85,8 @@ namespace Shape2SqlServer.Core
 							{
 								Trace.Write(string.Format("Bad reverse ({0}: {1})/ Converting to geometry", exReverse.GetType().Name, exReverse.Message));
 								// Maybe a self intersecting polygon. Use the buffer trick with the geometry
-								MsSql2008GeometryWriter geoWriter = new MsSql2008GeometryWriter();
-								SqlGeometry sqlGeom = geoWriter.WriteGeometry(geom);
+								SqlServerBytesWriter geoWriter = new SqlServerBytesWriter();
+								SqlGeometry sqlGeom = SqlGeometry.Deserialize(new SqlBytes(geoWriter.Write(geom)));
 								if (!sqlGeom.STIsValid().Value)
 								{
 									Trace.Write(" / Make valid");
@@ -116,15 +116,15 @@ namespace Shape2SqlServer.Core
 				}
 				else
 				{
-					MsSql2008GeometryWriter geoWriter = new MsSql2008GeometryWriter();
-					SqlGeometry v_retGeom = geoWriter.WriteGeometry(geom);
+					SqlServerBytesWriter geoWriter = new SqlServerBytesWriter();
+					SqlGeometry v_retGeom = SqlGeometry.Deserialize(new SqlBytes(geoWriter.Write(geom)));
 					if (!v_retGeom.STIsValid().Value)
 					{
 						Trace.TraceWarning(string.Format("Invalid geometry. Must call make valid : {0}", v_retGeom.IsValidDetailed()));
 						v_retGeom = v_retGeom.MakeValid();
 					}
 					v_ret = v_retGeom;
-					//feature.geomWKT = geoWriter.WriteGeometry(geomOut).ToString();
+					//feature.geomWKT = geoWriter.Write(geomOut).ToString();
 				}
 			}
 			catch (Exception)

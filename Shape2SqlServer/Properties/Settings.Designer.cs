@@ -142,5 +142,65 @@ namespace Shape2SqlServer.Properties {
                 this["schema"] = value;
             }
         }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string sqlServer {
+            get {
+                return ((string)(this["sqlServer"]));
+            }
+            set {
+                this["sqlServer"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string sqlDatabase {
+            get {
+                return ((string)(this["sqlDatabase"]));
+            }
+            set {
+                this["sqlDatabase"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool sqlUseWindowsAuth {
+            get {
+                return ((bool)(this["sqlUseWindowsAuth"]));
+            }
+            set {
+                this["sqlUseWindowsAuth"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string sqlUsername {
+            get {
+                return ((string)(this["sqlUsername"]));
+            }
+            set {
+                this["sqlUsername"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool sqlTrustServerCertificate {
+            get {
+                return ((bool)(this["sqlTrustServerCertificate"]));
+            }
+            set {
+                this["sqlTrustServerCertificate"] = value;
+            }
+        }
     }
 }

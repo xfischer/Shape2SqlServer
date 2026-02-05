@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using GeoAPI.Geometries;
+using NetTopologySuite.Geometries;
 
 namespace Shape2SqlServer.Core
 {
@@ -17,11 +17,11 @@ namespace Shape2SqlServer.Core
         /// </summary>
         public string ShapeInfo { get { return _shapeInfo; } }
 
-		private IGeometry _shapeGeom;
+		private Geometry _shapeGeom;
         /// <summary>
         /// Geometry of the shape that caused the exception.
         /// </summary>
-        public IGeometry ShapeGeom { get { return _shapeGeom; } }
+        public Geometry ShapeGeom { get { return _shapeGeom; } }
 
 		private int _shapeIndex;
         /// <summary>
@@ -42,7 +42,7 @@ namespace Shape2SqlServer.Core
         /// <param name="shapeInfo">Information about the shape that caused the exception</param>
         /// <param name="shapeGeom">Geometry of the shape that caused the exception</param>
         /// <param name="recordIndex">Index in the input file of the shape that caused the exception</param>
-        public ShapeImportExceptionEventArgs(Exception exception, bool isTerminating, string shapeInfo, IGeometry shapeGeom, int recordIndex)
+        public ShapeImportExceptionEventArgs(Exception exception, bool isTerminating, string shapeInfo, Geometry shapeGeom, int recordIndex)
 			: base(exception, isTerminating)
 		{
 			_shapeInfo = shapeInfo;

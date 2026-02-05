@@ -4,9 +4,8 @@ using System.Linq;
 using System.Text;
 using NetTopologySuite.IO;
 using NetTopologySuite.Geometries;
-using GeoAPI.CoordinateSystems.Transformations;
+using ProjNet.CoordinateSystems.Transformations;
 using Microsoft.SqlServer.Types;
-using GeoAPI.Geometries;
 using System.Data;
 using System.Collections;
 
@@ -34,7 +33,7 @@ namespace Shape2SqlServer.Core
 			_shapeFileDataReader = new ShapefileDataReader(shapeFile, GeometryFactory.Default);
 		}
 
-		public IGeometry Geometry
+		public Geometry Geometry
 		{
 			get
 			{
@@ -56,7 +55,7 @@ namespace Shape2SqlServer.Core
 				{
 
 					// Get shape and reproject if necessary
-					IGeometry geom = _shapeFileDataReader.Geometry;
+					Geometry geom = _shapeFileDataReader.Geometry;
 					if (_coordTransform != null)
 						geom = ShapeFileHelper.ReprojectGeometry(_shapeFileDataReader.Geometry, _coordTransform);
 

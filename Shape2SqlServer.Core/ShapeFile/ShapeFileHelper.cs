@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using NetTopologySuite.Geometries;
-using GeoAPI.CoordinateSystems.Transformations;
-using GeoAPI.Geometries;
+using ProjNet.CoordinateSystems.Transformations;
 using NetTopologySuite.IO;
 using System.Diagnostics;
 
@@ -95,9 +94,9 @@ namespace Shape2SqlServer.Core
 		#region ShapeFile Reader converters
 
 		//TODO extract methods (reproject and shape2sql)
-		public static IGeometry ReprojectGeometry(IGeometry geom, ICoordinateTransformation trans)
+		public static Geometry ReprojectGeometry(Geometry geom, ICoordinateTransformation trans)
 		{
-			IGeometry geomOut = null; // BUGGY GeometryTransform.TransformGeometry(GeometryFactory.Default, geom, trans.MathTransform);
+			Geometry geomOut = null; // BUGGY GeometryTransform.TransformGeometry(GeometryFactory.Default, geom, trans.MathTransform);
 
 
 			switch (geom.OgcGeometryType)
@@ -238,11 +237,14 @@ namespace Shape2SqlServer.Core
 			if (trans == null)
 				return source;
 
-			List<Coordinate> coordlist = new List<Coordinate>();
+			List<Coordinate> coordlist = new List<Coordinate>(source.Length);
 			foreach (var c in source)
 			{
 				double[] coords = trans.MathTransform.Transform(new double[] { c.X, c.Y, c.Z });
-				coordlist.Add(new Coordinate(coords[0], coords[1], coords[2]));
+				var coord = new Coordinate(coords[0], coords[1]); 
+				if (coords.Length>2) coord.Z = coords[2]; 
+				
+				coordlist.Add(coord);
 			}
 
 			return coordlist.Reverse<Coordinate>().ToArray();

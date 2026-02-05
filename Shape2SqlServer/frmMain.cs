@@ -7,19 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.IO;
-using System.IO.IsolatedStorage;
 using System.Diagnostics;
-using Microsoft.SqlServer.Types;
-using System.Text.RegularExpressions;
-using System.Data.SqlClient;
-using GeoAPI.CoordinateSystems.Transformations;
-using GeoAPI.CoordinateSystems;
-using ProjNet.CoordinateSystems.Transformations;
-using NetTopologySuite.IO;
-using GeoAPI.Geometries;
-using NetTopologySuite.Geometries;
-using NetTopologySuite.CoordinateSystems.Transformations;
-using Microsoft.Data.ConnectionUI;
 using Shape2SqlServer.Core;
 
 namespace Shape2SqlServer
@@ -55,17 +43,12 @@ namespace Shape2SqlServer
 
 		#region User events
 
-		private void frmMain_Load(object sender, EventArgs e)
-		{
-			LoadSettings();
-
-		}
+		private void frmMain_Load(object sender, EventArgs e) => LoadSettings();
 
 		private void btnImport_Click(object sender, EventArgs e)
 		{
 			try
 			{
-
 				SaveSettings();
 
 				btnImport.Visible = false;
@@ -73,8 +56,6 @@ namespace Shape2SqlServer
 				toolStripProgressBar1.Visible = true;
 
 				this.ImportShapeFile(chkSafeMode.Checked);
-
-
 			}
 			catch (Exception ex)
 			{
@@ -86,54 +67,38 @@ namespace Shape2SqlServer
 		{
 			if (dlgOpen.ShowDialog() == System.Windows.Forms.DialogResult.OK)
 			{
-				this.InitIHM_ShapeFile(dlgOpen.FileName);
+				this.InitGUI_ShapeFile(dlgOpen.FileName);
 			}
 		}
 
-		private void chkReproject_CheckedChanged(object sender, EventArgs e)
-		{
-			txtCoordSys.Enabled = chkReproject.Checked;
-		}
+        private void chkReproject_CheckedChanged(object sender, EventArgs e) => txtCoordSys.Enabled = chkReproject.Checked;
 
-		private void chkSRID_CheckedChanged(object sender, EventArgs e)
-		{
-			txtSrid.Enabled = chkSRID.Checked;
-		}
+        private void chkSRID_CheckedChanged(object sender, EventArgs e) => txtSrid.Enabled = chkSRID.Checked;
 
-		private void frmMain_FormClosed(object sender, FormClosedEventArgs e)
-		{
-			SaveSettings();
-		}
+        private void frmMain_FormClosed(object sender, FormClosedEventArgs e) => SaveSettings();
 
-		private void btnConString_Click(object sender, EventArgs e)
+        private void btnConString_Click(object sender, EventArgs e)
 		{
 			string conString = txtConString.Text;
 			this.ShowConnectionStringDialog(ref conString);
 			txtConString.Text = conString;
 		}
 
-		private void btnCancel_Click(object sender, EventArgs e)
-		{
-			_importer.CancelAsync();
-		}
+        private void btnCancel_Click(object sender, EventArgs e) => _importer.CancelAsync();
 
-		private void lnkCSSelector_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
-		{
-			this.ShowSRIDSelector();
-		}
+        private void lnkCSSelector_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e) => this.ShowSRIDSelector();
 
-		private void lblShapeHeader_Click(object sender, EventArgs e)
-		{
+        private void lblShapeHeader_Click(object sender, EventArgs e) => 
 			MessageBox.Show(lblShapeHeader.Tag.ToString(), "Coordinate System", MessageBoxButtons.OK, MessageBoxIcon.Information);
-		}
+        
 		#endregion
 
-		#region Private
+        #region Private
 
-		#region Helpers
+        #region Helpers
 
-		// For checkedlist binding
-		private class ShapeField
+        // For checkedlist binding
+        private class ShapeField
 		{
 			public string Name { get; set; }
 			public string Type { get; set; }
@@ -142,7 +107,7 @@ namespace Shape2SqlServer
 
 		private void LoadSettings()
 		{
-            this.InitIHM_ShapeFile(Properties.Settings.Default.shapeFile);
+            this.InitGUI_ShapeFile(Properties.Settings.Default.shapeFile);
 			txtConString.Text = Properties.Settings.Default.connectionString;
 			txtCoordSys.Text = Properties.Settings.Default.coordSys;
 			chkDrop.Checked = Properties.Settings.Default.dropTable;
@@ -176,19 +141,10 @@ namespace Shape2SqlServer
 
 		private void ShowConnectionStringDialog(ref string connectionString)
 		{
-			DataConnectionDialog dlg = new DataConnectionDialog();
-			DataSource.AddStandardDataSources(dlg);
-			dlg.SelectedDataSource = DataSource.SqlDataSource;
-			dlg.SelectedDataProvider = DataProvider.SqlDataProvider;
-			try
+			using (var dlg = new frmConnectionDialog())
 			{
 				dlg.ConnectionString = connectionString;
-			}
-			catch
-			{ }
-			finally
-			{
-				if (DataConnectionDialog.Show(dlg) == DialogResult.OK)
+				if (dlg.ShowDialog(this) == DialogResult.OK)
 				{
 					connectionString = dlg.ConnectionString;
 				}
@@ -208,7 +164,7 @@ namespace Shape2SqlServer
 			}
 		}
 
-		private void InitIHM_ShapeFile(string shapeFile)
+		private void InitGUI_ShapeFile(string shapeFile)
 		{
 			try
 			{
@@ -227,12 +183,6 @@ namespace Shape2SqlServer
 				toolStripProgressBar1.Maximum = importer.RecordCount;
 				toolStripProgressBar1.Value = 0;
 				toolStripProgressBar1.Step = 1;
-				
-				//ICoordinateSystem csSource = ProjNet.Converters.WellKnownText.CoordinateSystemWktReader.Parse(importer.CoordinateSystem) as ICoordinateSystem;
-				//ICoordinateSystem csTarget = ProjNet.Converters.WellKnownText.CoordinateSystemWktReader.Parse(txtCoordSys.Text) as ICoordinateSystem;
-
-				//bool testEq = csSource.EqualParams(csTarget);
-				
 
 				BindingList<ShapeField> bindList = new BindingList<ShapeField>();
 				foreach (var kv in importer.Fields)
@@ -370,12 +320,6 @@ namespace Shape2SqlServer
 
 
 		#endregion
-
-
-
-
-
-
 
 	}
 }

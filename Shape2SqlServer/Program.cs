@@ -13,7 +13,8 @@ namespace Shape2SqlServer
 		[STAThread]
 		static void Main()
 		{
-			SqlServerTypes.Utilities.LoadNativeAssemblies(AppDomain.CurrentDomain.BaseDirectory);
+			// Modern Microsoft.SqlServer.Types package (v170+) handles native assembly loading automatically
+			// SqlServerTypes.Utilities.LoadNativeAssemblies(AppDomain.CurrentDomain.BaseDirectory);
 			Application.EnableVisualStyles();
 			Application.SetCompatibleTextRenderingDefault(false);
 			Application.Run(new frmMain());

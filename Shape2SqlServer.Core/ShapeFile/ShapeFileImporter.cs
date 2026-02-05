@@ -2,14 +2,13 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.IO;
 using System.Linq;
-using GeoAPI.CoordinateSystems;
-using GeoAPI.CoordinateSystems.Transformations;
-using GeoAPI.Geometries;
 using NetTopologySuite.Geometries;
 using NetTopologySuite.IO;
+using ProjNet;
+using ProjNet.CoordinateSystems;
 using ProjNet.CoordinateSystems.Transformations;
 using System.Diagnostics;
 
@@ -191,8 +190,9 @@ namespace Shape2SqlServer.Core
 					{
 						//string v_targetCoordSys =  "GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],AUTHORITY[\"EPSG\",\"6326\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.01745329251994328,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"4326\"]]";
 
-						ICoordinateSystem csSource = ProjNet.Converters.WellKnownText.CoordinateSystemWktReader.Parse(this.CoordinateSystem) as ICoordinateSystem;
-						ICoordinateSystem csTarget = ProjNet.Converters.WellKnownText.CoordinateSystemWktReader.Parse(targetCoordSystem) as ICoordinateSystem;
+						var csFactory = new CoordinateSystemFactory();
+						var csSource = csFactory.CreateFromWkt(this.CoordinateSystem);
+						var csTarget = csFactory.CreateFromWkt(targetCoordSystem);
 
 						_transform = new CoordinateTransformationFactory().CreateFromCoordinateSystems(csSource, csTarget);
 					}
@@ -241,8 +241,8 @@ namespace Shape2SqlServer.Core
 										if (_worker.CancellationPending)
 											break;
 
-										IGeometry geom = shapeDataReader.Geometry;
-										IGeometry geomOut = null; // BUGGY GeometryTransform.TransformGeometry(GeometryFactory.Default, geom, trans.MathTransform);
+										Geometry geom = shapeDataReader.Geometry;
+										Geometry geomOut = null; // BUGGY GeometryTransform.TransformGeometry(GeometryFactory.Default, geom, trans.MathTransform);
 										if (_transform == null)
 											geomOut = geom;
 										else
@@ -389,7 +389,7 @@ namespace Shape2SqlServer.Core
 											bulk.WriteToServer(dataTable);
 											bulk.Close();
 										}
-										catch (OperationAbortedException ex)
+										catch (SqlException ex)
 										{
 											Shape2SqlServerTrace.Source.TraceData(TraceEventType.Error, 1, "Error inserting: ", ex);
 											bulk.Close();
@@ -507,8 +507,9 @@ namespace Shape2SqlServer.Core
 					{
 						//string v_targetCoordSys =  "GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],AUTHORITY[\"EPSG\",\"6326\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.01745329251994328,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"4326\"]]";
 
-						ICoordinateSystem csSource = ProjNet.Converters.WellKnownText.CoordinateSystemWktReader.Parse(this.CoordinateSystem) as ICoordinateSystem;
-						ICoordinateSystem csTarget = ProjNet.Converters.WellKnownText.CoordinateSystemWktReader.Parse(targetCoordSystem) as ICoordinateSystem;
+						var csFactory = new CoordinateSystemFactory();
+						var csSource = csFactory.CreateFromWkt(this.CoordinateSystem);
+						var csTarget = csFactory.CreateFromWkt(targetCoordSystem);
 
 						_transform = new CoordinateTransformationFactory().CreateFromCoordinateSystems(csSource, csTarget);
 					}
@@ -586,10 +587,10 @@ namespace Shape2SqlServer.Core
 									{
 										bulk.WriteToServer(shapeDataReader);
 									}
-									catch (OperationAbortedException)
+									catch (SqlException)
 									{
 										bulkInError = true;
-										Shape2SqlServerTrace.Source.TraceEvent(TraceEventType.Error, 1, "SqlBulkImport throw OperationAbortedException");
+										Shape2SqlServerTrace.Source.TraceEvent(TraceEventType.Error, 1, "SqlBulkImport throw SqlException");
 									}
 									catch (Exception exBulk)
 									{
@@ -776,7 +777,7 @@ namespace Shape2SqlServer.Core
 			foreach (var c in source)
 			{
 				double[] coords = trans.MathTransform.Transform(new double[] { c.X, c.Y, c.Z });
-				coordlist.Add(new Coordinate(coords[0], coords[1], coords[2]));
+				var coord = new Coordinate(coords[0], coords[1]); coord.Z = coords[2]; coordlist.Add(coord);
 			}
 
 			return coordlist.Reverse<Coordinate>().ToArray();
