@@ -1,5 +1,9 @@
 #nullable enable
+using System;
+using System.IO;
 using Microsoft.Extensions.Logging;
+using Serilog;
+using Serilog.Extensions.Logging;
 
 namespace Shape2SqlServer.Core;
 
@@ -10,11 +14,11 @@ namespace Shape2SqlServer.Core;
 public static class Shape2SqlServerLoggerFactory
 {
     private static ILoggerFactory? _loggerFactory;
-    private static ILogger? _logger;
+    private static Microsoft.Extensions.Logging.ILogger? _logger;
 
     /// <summary>
     /// Gets or sets the logger factory used to create loggers.
-    /// If not set, a default console logger factory will be used.
+    /// If not set, a default logger factory will be used with console, debug, and file logging.
     /// </summary>
     public static ILoggerFactory LoggerFactory
     {
@@ -22,11 +26,25 @@ public static class Shape2SqlServerLoggerFactory
         {
             if (_loggerFactory == null)
             {
+                // Configure Serilog for file logging
+                var logFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs", "shape2sqlserver-.log");
+
+                var serilogLogger = new LoggerConfiguration()
+                    .MinimumLevel.Warning()
+                    .WriteTo.File(
+                        path: logFilePath,
+                        rollingInterval: RollingInterval.Day,
+                        fileSizeLimitBytes: 10_485_760, // 10 MB
+                        rollOnFileSizeLimit: true,
+                        retainedFileCountLimit: 7)
+                    .CreateLogger();
+
                 _loggerFactory = Microsoft.Extensions.Logging.LoggerFactory.Create(builder =>
                 {
                     builder
                         .AddConsole()
                         .AddDebug()
+                        .AddSerilog(serilogLogger)
                         .SetMinimumLevel(LogLevel.Warning);
                 });
             }
@@ -38,7 +56,7 @@ public static class Shape2SqlServerLoggerFactory
     /// <summary>
     /// Gets the default logger instance for Shape2SqlServer.
     /// </summary>
-    public static ILogger Logger
+    public static Microsoft.Extensions.Logging.ILogger Logger
     {
         get
         {
@@ -53,5 +71,5 @@ public static class Shape2SqlServerLoggerFactory
     /// <summary>
     /// Creates a logger for a specific category.
     /// </summary>
-    public static ILogger<T> CreateLogger<T>() => LoggerFactory.CreateLogger<T>();
+    public static Microsoft.Extensions.Logging.ILogger<T> CreateLogger<T>() => LoggerFactory.CreateLogger<T>();
 }
