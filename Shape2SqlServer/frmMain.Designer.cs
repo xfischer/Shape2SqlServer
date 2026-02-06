@@ -1,11 +1,13 @@
-﻿namespace Shape2SqlServer
+﻿#nullable enable
+
+namespace Shape2SqlServer;
+
+partial class frmMain
 {
-	partial class frmMain
-	{
-		/// <summary>
-		/// Variable nécessaire au concepteur.
-		/// </summary>
-		private System.ComponentModel.IContainer components = null;
+	/// <summary>
+	/// Variable nécessaire au concepteur.
+	/// </summary>
+	private System.ComponentModel.IContainer? components = null;
 
 		/// <summary>
 		/// Nettoyage des ressources utilisées.
@@ -468,40 +470,39 @@
 
 		#endregion
 
-		private System.Windows.Forms.Button btnImport;
-		private System.Windows.Forms.TextBox txtSHP;
-		private System.Windows.Forms.Button btnBrowse;
-		private System.Windows.Forms.OpenFileDialog dlgOpen;
-		private System.Windows.Forms.Label label1;
-		private System.Windows.Forms.Label label2;
-		private System.Windows.Forms.Button btnConString;
-		private System.Windows.Forms.TextBox txtConString;
-		private System.Windows.Forms.Label lblShapeHeader;
-		private System.Windows.Forms.StatusStrip statusStrip1;
-		private System.Windows.Forms.GroupBox groupBox1;
-		private System.Windows.Forms.Label label5;
-		private System.Windows.Forms.TextBox txtGeomCol;
-		private System.Windows.Forms.TextBox txtIDCol;
-		private System.Windows.Forms.Label label6;
-		private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
-		private System.Windows.Forms.ToolStripProgressBar toolStripProgressBar1;
-		private System.Windows.Forms.CheckedListBox lstColumns;
-		private System.Windows.Forms.GroupBox groupBox2;
-		private System.Windows.Forms.TextBox txtTableName;
-		private System.Windows.Forms.Label label7;
-		private System.Windows.Forms.CheckBox chkReproject;
-		private System.Windows.Forms.CheckBox chkDrop;
-		private System.Windows.Forms.TextBox txtCoordSys;
-		private System.Windows.Forms.TextBox txtSrid;
-		private System.Windows.Forms.CheckBox chkSRID;
-		private System.Windows.Forms.RadioButton radGeog;
-		private System.Windows.Forms.RadioButton radGeom;
-		private System.Windows.Forms.Button btnCancel;
-		private System.Windows.Forms.LinkLabel lnkCSSelector;
-		private System.Windows.Forms.CheckBox chkSafeMode;
-		private System.Windows.Forms.RadioButton radBoth;
-        private System.Windows.Forms.TextBox txtSchema;
-        private System.Windows.Forms.Label label3;
-    }
+	private System.Windows.Forms.Button btnImport = null!;
+	private System.Windows.Forms.TextBox txtSHP = null!;
+	private System.Windows.Forms.Button btnBrowse = null!;
+	private System.Windows.Forms.OpenFileDialog dlgOpen = null!;
+	private System.Windows.Forms.Label label1 = null!;
+	private System.Windows.Forms.Label label2 = null!;
+	private System.Windows.Forms.Button btnConString = null!;
+	private System.Windows.Forms.TextBox txtConString = null!;
+	private System.Windows.Forms.Label lblShapeHeader = null!;
+	private System.Windows.Forms.StatusStrip statusStrip1 = null!;
+	private System.Windows.Forms.GroupBox groupBox1 = null!;
+	private System.Windows.Forms.Label label5 = null!;
+	private System.Windows.Forms.TextBox txtGeomCol = null!;
+	private System.Windows.Forms.TextBox txtIDCol = null!;
+	private System.Windows.Forms.Label label6 = null!;
+	private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1 = null!;
+	private System.Windows.Forms.ToolStripProgressBar toolStripProgressBar1 = null!;
+	private System.Windows.Forms.CheckedListBox lstColumns = null!;
+	private System.Windows.Forms.GroupBox groupBox2 = null!;
+	private System.Windows.Forms.TextBox txtTableName = null!;
+	private System.Windows.Forms.Label label7 = null!;
+	private System.Windows.Forms.CheckBox chkReproject = null!;
+	private System.Windows.Forms.CheckBox chkDrop = null!;
+	private System.Windows.Forms.TextBox txtCoordSys = null!;
+	private System.Windows.Forms.TextBox txtSrid = null!;
+	private System.Windows.Forms.CheckBox chkSRID = null!;
+	private System.Windows.Forms.RadioButton radGeog = null!;
+	private System.Windows.Forms.RadioButton radGeom = null!;
+	private System.Windows.Forms.Button btnCancel = null!;
+	private System.Windows.Forms.LinkLabel lnkCSSelector = null!;
+	private System.Windows.Forms.CheckBox chkSafeMode = null!;
+	private System.Windows.Forms.RadioButton radBoth = null!;
+	private System.Windows.Forms.TextBox txtSchema = null!;
+	private System.Windows.Forms.Label label3 = null!;
 }
 

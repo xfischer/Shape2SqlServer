@@ -1,12 +1,12 @@
-﻿using System;
+#nullable enable
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Shape2SqlServer.Core
+namespace Shape2SqlServer.Core;
+
+internal enum enSpatialIndexGridDensity
 {
-	internal enum enSpatialIndexGridDensity
-	{
-		LOW, MEDIUM, HIGH
-	}
+	LOW, MEDIUM, HIGH
 }

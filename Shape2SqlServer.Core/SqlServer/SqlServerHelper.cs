@@ -1,32 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using NetTopologySuite.Geometries;
-using System.Text.RegularExpressions;
-using System.Data;
-using Microsoft.SqlServer.Types;
-using System.Diagnostics;
-using NetTopologySuite.IO;
+﻿#nullable enable
+
+using System;
 using System.Data.SqlTypes;
+using Microsoft.Extensions.Logging;
+using Microsoft.SqlServer.Types;
+using NetTopologySuite.Geometries;
+using NetTopologySuite.IO;
 
+namespace Shape2SqlServer.Core;
 
-namespace Shape2SqlServer.Core
+internal static class SqlServerHelper
 {
-	internal static class SqlServerHelper
-	{
+	private static ILogger Logger => Shape2SqlServerLoggerFactory.Logger;
 
-		private const double INVALIDGEOM_BUFFER = 0.000001d;
+	private const double INVALIDGEOM_BUFFER = 0.000001d;
 		private const double INVALIDGEOM_REDUCE = 0.00000025d;
 		internal static bool? REVERSE_GEOMETRIES = null;
 
-		internal static object ConvertToSqlType(Geometry geom, int SRID, bool useGeography, int curRowIndex)
+		internal static object? ConvertToSqlType(Geometry geom, int SRID, bool useGeography, int curRowIndex)
 		{
-			object v_ret = null;
-			try
-			{
-				// Set geom SRID
-				geom.SRID = SRID;
+			object? v_ret = null;
+
+			// Set geom SRID
+			geom.SRID = SRID;
 
 				if (useGeography)
 				{
@@ -41,22 +37,22 @@ namespace Shape2SqlServer.Core
 								REVERSE_GEOMETRIES = true;
 						}
 
-						SqlServerBytesWriter geoWriter = new SqlServerBytesWriter();
-						SqlGeography v_geog = null;
+						SqlServerBytesWriter geoWriter = new();
+						SqlGeography? v_geog = null;
 						if (REVERSE_GEOMETRIES.GetValueOrDefault(false))
 							v_geog = SqlGeography.Deserialize(new SqlBytes(geoWriter.Write(geom.Reverse())));
 						else
 							v_geog = SqlGeography.Deserialize(new SqlBytes(geoWriter.Write(geom)));
 						if (!v_geog.STIsValid().Value)
 						{
-							Trace.TraceWarning(string.Format("Invalid geometry. Must call make valid : {0}", v_geog.IsValidDetailed()));
+							Logger.LogWarning("Invalid geometry. Must call make valid: {Details}", v_geog.IsValidDetailed());
 							v_geog = v_geog.MakeValid();
 						}
 						v_ret = v_geog;
 					}
 					catch (OutOfMemoryException exMemory)
 					{
-						Trace.WriteLine(string.Format("OutOfMemory on geom #{0} ({1}: {2})", curRowIndex, exMemory.GetType().Name, exMemory.Message));
+						Logger.LogError(exMemory, "OutOfMemory on geom #{RowIndex}", curRowIndex);
 						throw;
 					}
 					catch (Exception exWriteGeom)
@@ -66,9 +62,9 @@ namespace Shape2SqlServer.Core
 
 							enRingOrientation ringOrientation = SqlServerHelper.GetRingOrientation(geom.Coordinates);
 
-							Trace.WriteLine(string.Format("Invalid geom #{0} ({1}: {2}). Try to reverse", curRowIndex, exWriteGeom.GetType().Name, exWriteGeom.Message));
+							Logger.LogWarning(exWriteGeom, "Invalid geom #{RowIndex}. Try to reverse", curRowIndex);
 							// Maybe bad orientation
-							SqlServerBytesWriter geogWriter = new SqlServerBytesWriter();
+							SqlServerBytesWriter geogWriter = new();
 							v_ret = SqlGeography.Deserialize(new SqlBytes(geogWriter.Write(geom.Reverse())));
 
 							REVERSE_GEOMETRIES = true;
@@ -76,38 +72,36 @@ namespace Shape2SqlServer.Core
 						}
 						catch (OutOfMemoryException exMemory)
 						{
-							Trace.WriteLine(string.Format("OutOfMemory on geom #{0} ({1}: {2})", curRowIndex, exMemory.GetType().Name, exMemory.Message));
+							Logger.LogError(exMemory, "OutOfMemory on geom #{RowIndex}", curRowIndex);
 							throw;
 						}
 						catch (Exception exReverse)
 						{
 							try
 							{
-								Trace.Write(string.Format("Bad reverse ({0}: {1})/ Converting to geometry", exReverse.GetType().Name, exReverse.Message));
+								Logger.LogWarning(exReverse, "Bad reverse, converting to geometry");
 								// Maybe a self intersecting polygon. Use the buffer trick with the geometry
-								SqlServerBytesWriter geoWriter = new SqlServerBytesWriter();
+								SqlServerBytesWriter geoWriter = new();
 								SqlGeometry sqlGeom = SqlGeometry.Deserialize(new SqlBytes(geoWriter.Write(geom)));
 								if (!sqlGeom.STIsValid().Value)
 								{
-									Trace.Write(" / Make valid");
+									Logger.LogInformation("Make valid - OK");
 									v_ret = SqlGeography.STGeomFromText(new SqlChars(new SqlString(sqlGeom.MakeValid().ToString())), SRID);
-									Trace.WriteLine(" / OK");
 								}
 								else
 								{
-									Trace.Write(" / Buffer");
+									Logger.LogInformation("Buffer - OK");
 									v_ret = SqlGeography.STGeomFromText(new SqlChars(new SqlString(sqlGeom.STBuffer(INVALIDGEOM_BUFFER).STBuffer(-INVALIDGEOM_BUFFER).Reduce(INVALIDGEOM_REDUCE).ToString())), SRID);
-									Trace.WriteLine(" / OK");
 								}
 							}
 							catch (OutOfMemoryException exMemory)
 							{
-								Trace.WriteLine(string.Format("OutOfMemory on geom #{0} ({1}: {2})", curRowIndex, exMemory.GetType().Name, exMemory.Message));
+								Logger.LogError(exMemory, "OutOfMemory on geom #{RowIndex}", curRowIndex);
 								throw;
 							}
 							catch (Exception exBuffer)
 							{
-								Trace.WriteLine(string.Format(" / KO ({0}: {1})", exBuffer.GetType().Name, exBuffer.Message));
+								Logger.LogError(exBuffer, "Failed to fix geometry");
 								throw;
 							}
 
@@ -116,24 +110,17 @@ namespace Shape2SqlServer.Core
 				}
 				else
 				{
-					SqlServerBytesWriter geoWriter = new SqlServerBytesWriter();
+					SqlServerBytesWriter geoWriter = new();
 					SqlGeometry v_retGeom = SqlGeometry.Deserialize(new SqlBytes(geoWriter.Write(geom)));
 					if (!v_retGeom.STIsValid().Value)
 					{
-						Trace.TraceWarning(string.Format("Invalid geometry. Must call make valid : {0}", v_retGeom.IsValidDetailed()));
+						Logger.LogWarning("Invalid geometry. Must call make valid: {Details}", v_retGeom.IsValidDetailed());
 						v_retGeom = v_retGeom.MakeValid();
 					}
 					v_ret = v_retGeom;
-					//feature.geomWKT = geoWriter.Write(geomOut).ToString();
 				}
-			}
-			catch (Exception)
-			{
-				throw;
-			}
 
 			return v_ret;
-
 		}
 
 		internal static enRingOrientation GetRingOrientation(Coordinate[] coordinates)
@@ -276,4 +263,3 @@ namespace Shape2SqlServer.Core
 			return new BoundingBox(bounds.MinX, bounds.MinY, bounds.MaxX, bounds.MaxY);
 		}
 	}
-}

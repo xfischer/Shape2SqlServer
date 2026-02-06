@@ -1,327 +1,306 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 using System.IO;
-using System.Diagnostics;
+using Microsoft.Extensions.Logging;
 using Shape2SqlServer.Core;
 
-namespace Shape2SqlServer
+namespace Shape2SqlServer;
+
+public partial class frmMain : Form
 {
-	public partial class frmMain : Form
+	private delegate void showErrorDelegate(ShapeImportExceptionEventArgs ex);
+	private delegate void progressChangedDelegate(int value, string message);
+	private ShapeFileImporter? _importer;
+
+	public frmMain()
 	{
-		private delegate void showErrorDelegate(ShapeImportExceptionEventArgs ex);
-		private delegate void progressChangedDelegate(int value, string message);
-		private ShapeFileImporter _importer;
+		InitializeComponent();
+		InitLogging();
+	}
 
-		public frmMain()
+	private void InitLogging() =>
+		Shape2SqlServerLoggerFactory.Logger.LogInformation("Application started on {Date}", DateTime.Now);
+
+	#region User events
+
+	private void frmMain_Load(object sender, EventArgs e) => LoadSettings();
+
+	private void btnImport_Click(object sender, EventArgs e)
+	{
+		try
 		{
-			InitializeComponent();
+			SaveSettings();
 
-			InitTracing();
+			btnImport.Visible = false;
+			btnCancel.Visible = true;
+			toolStripProgressBar1.Visible = true;
+
+			ImportShapeFile(chkSafeMode.Checked);
 		}
-
-		private void InitTracing()
+		catch (Exception ex)
 		{
-			File.Delete("Shape2SqlServer.Shape2SqlServer.shared.log");
-			Shape2SqlServerTrace.Source.Listeners.Clear();
-			TextWriterTraceListener txtListener = new TextWriterTraceListener("Shape2SqlServer.Shape2SqlServer.shared.log", "Shape2SqlServer.Shape2SqlServer.TraceListener");
-			Shape2SqlServerTrace.Source.Switch.Level = SourceLevels.All;
-			Shape2SqlServerTrace.Source.Listeners.Remove("Default");
-			Shape2SqlServerTrace.Source.Listeners.Add(txtListener);
-			Trace.Listeners.Add(txtListener);
-			Trace.AutoFlush = true;
-
-
-
-			Shape2SqlServerTrace.Source.TraceInformation("Trace file created on " + DateTime.Now.ToString());
+			MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 		}
+	}
 
-		#region User events
-
-		private void frmMain_Load(object sender, EventArgs e) => LoadSettings();
-
-		private void btnImport_Click(object sender, EventArgs e)
+	private void btnBrowse_Click(object sender, EventArgs e)
+	{
+		if (dlgOpen.ShowDialog() == DialogResult.OK)
 		{
-			try
+			InitGUI_ShapeFile(dlgOpen.FileName);
+		}
+	}
+
+	private void chkReproject_CheckedChanged(object sender, EventArgs e) => txtCoordSys.Enabled = chkReproject.Checked;
+
+	private void chkSRID_CheckedChanged(object sender, EventArgs e) => txtSrid.Enabled = chkSRID.Checked;
+
+	private void frmMain_FormClosed(object sender, FormClosedEventArgs e) => SaveSettings();
+
+	private void btnConString_Click(object sender, EventArgs e)
+	{
+		string conString = txtConString.Text;
+		ShowConnectionStringDialog(ref conString);
+		txtConString.Text = conString;
+	}
+
+	private void btnCancel_Click(object sender, EventArgs e) => _importer?.CancelAsync();
+
+	private void lnkCSSelector_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e) => ShowSRIDSelector();
+
+	private void lblShapeHeader_Click(object sender, EventArgs e) =>
+		MessageBox.Show(lblShapeHeader.Tag?.ToString() ?? "", "Coordinate System", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+	#endregion
+
+	#region Private
+
+	#region Helpers
+
+	// For checkedlist binding
+	private class ShapeField
+	{
+		public required string Name { get; set; }
+		public required string Type { get; set; }
+		public string FullName => $"{Name} ({Type})";
+	}
+
+	private void LoadSettings()
+	{
+		InitGUI_ShapeFile(Properties.Settings.Default.shapeFile ?? "");
+		txtConString.Text = Properties.Settings.Default.connectionString ?? "";
+		txtCoordSys.Text = Properties.Settings.Default.coordSys ?? "";
+		chkDrop.Checked = Properties.Settings.Default.dropTable;
+		chkReproject.Checked = Properties.Settings.Default.reproject;
+		chkSafeMode.Checked = Properties.Settings.Default.safeMode;
+		chkSRID.Checked = Properties.Settings.Default.setSRID;
+		txtSrid.Text = Properties.Settings.Default.SRID ?? "";
+		txtSchema.Text = Properties.Settings.Default.schema ?? "";
+
+		switch ((enSpatialType)Properties.Settings.Default.useGeography)
+		{
+			case enSpatialType.both:
+				radBoth.Checked = true;
+				break;
+			case enSpatialType.geography:
+				radGeog.Checked = true;
+				break;
+			case enSpatialType.geometry:
+				radGeom.Checked = true;
+				break;
+		}
+	}
+
+	private void SaveSettings()
+	{
+		Properties.Settings.Default.shapeFile = txtSHP.Text;
+		Properties.Settings.Default.connectionString = txtConString.Text;
+		Properties.Settings.Default.coordSys = txtCoordSys.Text;
+		Properties.Settings.Default.dropTable = chkDrop.Checked;
+		Properties.Settings.Default.reproject = chkReproject.Checked;
+		Properties.Settings.Default.safeMode = chkSafeMode.Checked;
+		Properties.Settings.Default.setSRID = chkSRID.Checked;
+		Properties.Settings.Default.SRID = txtSrid.Text;
+		Properties.Settings.Default.schema = txtSchema.Text;
+		Properties.Settings.Default.useGeography = radGeog.Checked ? (int)enSpatialType.geography
+			: radGeom.Checked ? (int)enSpatialType.geometry
+			: (int)enSpatialType.both;
+		Properties.Settings.Default.Save();
+	}
+
+	private void ShowConnectionStringDialog(ref string connectionString)
+	{
+		using frmConnectionDialog dlg = new();
+		dlg.ConnectionString = connectionString;
+		if (dlg.ShowDialog(this) == DialogResult.OK)
+		{
+			connectionString = dlg.ConnectionString;
+		}
+	}
+
+	#endregion
+
+	private void ShowSRIDSelector()
+	{
+		using frmSRIDSelector frmSelector = new();
+		if (frmSelector.ShowDialog() == DialogResult.OK)
+		{
+			txtCoordSys.Text = frmSelector.SelectedWKT;
+			if (!string.IsNullOrEmpty(txtCoordSys.Text))
+				chkReproject.Checked = true;
+		}
+	}
+
+	private void InitGUI_ShapeFile(string shapeFile)
+	{
+		try
+		{
+			if (!File.Exists(shapeFile))
+				return;
+
+			ShapeFileImporter importer = new(shapeFile);
+
+			txtSHP.Text = shapeFile;
+			lblShapeHeader.Text = $"{importer.RecordCount} {importer.ShapeType} in shapefile\n{importer.Bounds}, {importer.CoordinateSystem}";
+			lblShapeHeader.Tag = importer.CoordinateSystem;
+			txtTableName.Text = importer.SqlTableName;
+			txtIDCol.Text = importer.SqlIDFIeld;
+			txtGeomCol.Text = importer.SqlGeomField;
+			toolStripProgressBar1.Minimum = 0;
+			toolStripProgressBar1.Maximum = importer.RecordCount;
+			toolStripProgressBar1.Value = 0;
+			toolStripProgressBar1.Step = 1;
+
+			BindingList<ShapeField> bindList = [];
+			foreach (var kv in importer.Fields)
 			{
-				SaveSettings();
-
-				btnImport.Visible = false;
-				btnCancel.Visible = true;
-				toolStripProgressBar1.Visible = true;
-
-				this.ImportShapeFile(chkSafeMode.Checked);
+				bindList.Add(new ShapeField { Name = kv.Key, Type = kv.Value.Name.ToString() });
 			}
-			catch (Exception ex)
+			lstColumns.DataSource = bindList;
+			lstColumns.DisplayMember = "FullName";
+			lstColumns.ValueMember = "Name";
+
+			for (int i = 0; i < lstColumns.Items.Count; i++)
 			{
-				MessageBox.Show("Error: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-			}
-		}
-
-		private void btnBrowse_Click(object sender, EventArgs e)
-		{
-			if (dlgOpen.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-			{
-				this.InitGUI_ShapeFile(dlgOpen.FileName);
-			}
-		}
-
-        private void chkReproject_CheckedChanged(object sender, EventArgs e) => txtCoordSys.Enabled = chkReproject.Checked;
-
-        private void chkSRID_CheckedChanged(object sender, EventArgs e) => txtSrid.Enabled = chkSRID.Checked;
-
-        private void frmMain_FormClosed(object sender, FormClosedEventArgs e) => SaveSettings();
-
-        private void btnConString_Click(object sender, EventArgs e)
-		{
-			string conString = txtConString.Text;
-			this.ShowConnectionStringDialog(ref conString);
-			txtConString.Text = conString;
-		}
-
-        private void btnCancel_Click(object sender, EventArgs e) => _importer.CancelAsync();
-
-        private void lnkCSSelector_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e) => this.ShowSRIDSelector();
-
-        private void lblShapeHeader_Click(object sender, EventArgs e) => 
-			MessageBox.Show(lblShapeHeader.Tag.ToString(), "Coordinate System", MessageBoxButtons.OK, MessageBoxIcon.Information);
-        
-		#endregion
-
-        #region Private
-
-        #region Helpers
-
-        // For checkedlist binding
-        private class ShapeField
-		{
-			public string Name { get; set; }
-			public string Type { get; set; }
-			public string FullName { get { return Name + " (" + Type + ")"; } }
-		}
-
-		private void LoadSettings()
-		{
-            this.InitGUI_ShapeFile(Properties.Settings.Default.shapeFile);
-			txtConString.Text = Properties.Settings.Default.connectionString;
-			txtCoordSys.Text = Properties.Settings.Default.coordSys;
-			chkDrop.Checked = Properties.Settings.Default.dropTable;
-			chkReproject.Checked = Properties.Settings.Default.reproject;
-			chkSafeMode.Checked = Properties.Settings.Default.safeMode;
-			chkSRID.Checked = Properties.Settings.Default.setSRID;
-			txtSrid.Text = Properties.Settings.Default.SRID;
-            txtSchema.Text = Properties.Settings.Default.schema;
-			switch ((enSpatialType)Properties.Settings.Default.useGeography)
-			{
-				case enSpatialType.both: radBoth.Checked = true; break;
-				case enSpatialType.geography: radGeog.Checked = true; break;
-				case enSpatialType.geometry: radGeom.Checked = true; break;
-			}
-		}
-
-		private void SaveSettings()
-		{
-			Properties.Settings.Default.shapeFile = txtSHP.Text;
-			Properties.Settings.Default.connectionString = txtConString.Text;
-			Properties.Settings.Default.coordSys = txtCoordSys.Text;
-			Properties.Settings.Default.dropTable = chkDrop.Checked;
-			Properties.Settings.Default.reproject = chkReproject.Checked;
-			Properties.Settings.Default.safeMode = chkSafeMode.Checked;
-			Properties.Settings.Default.setSRID = chkSRID.Checked;
-			Properties.Settings.Default.SRID = txtSrid.Text;
-            Properties.Settings.Default.schema = txtSchema.Text;
-            Properties.Settings.Default.useGeography = radGeog.Checked ? (int)enSpatialType.geography : radGeom.Checked ? (int)enSpatialType.geometry : (int)enSpatialType.both;
-			Properties.Settings.Default.Save();
-		}
-
-		private void ShowConnectionStringDialog(ref string connectionString)
-		{
-			using (var dlg = new frmConnectionDialog())
-			{
-				dlg.ConnectionString = connectionString;
-				if (dlg.ShowDialog(this) == DialogResult.OK)
-				{
-					connectionString = dlg.ConnectionString;
-				}
-			}
-		}
-
-		#endregion
-
-		private void ShowSRIDSelector()
-		{
-			frmSRIDSelector frmSelector = new frmSRIDSelector();
-			if (frmSelector.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-			{
-				txtCoordSys.Text = frmSelector.SelectedWKT;
-				if (!string.IsNullOrEmpty(txtCoordSys.Text))
-					chkReproject.Checked = true;
-			}
-		}
-
-		private void InitGUI_ShapeFile(string shapeFile)
-		{
-			try
-			{
-				if (!File.Exists(shapeFile))
-					return;
-
-				ShapeFileImporter importer = new ShapeFileImporter(shapeFile);
-
-				txtSHP.Text = shapeFile;
-				lblShapeHeader.Text = string.Format("{0} {1} in shapefile\n{2}", importer.RecordCount, importer.ShapeType, importer.Bounds, importer.CoordinateSystem);
-				lblShapeHeader.Tag = importer.CoordinateSystem;
-				txtTableName.Text = importer.SqlTableName;
-				txtIDCol.Text = importer.SqlIDFIeld;
-				txtGeomCol.Text = importer.SqlGeomField;
-				toolStripProgressBar1.Minimum = 0;
-				toolStripProgressBar1.Maximum = importer.RecordCount;
-				toolStripProgressBar1.Value = 0;
-				toolStripProgressBar1.Step = 1;
-
-				BindingList<ShapeField> bindList = new BindingList<ShapeField>();
-				foreach (var kv in importer.Fields)
-				{
-					bindList.Add(new ShapeField() { Name = kv.Key, Type = kv.Value.Name.ToString() });
-				}
-				lstColumns.DataSource = bindList;
-				lstColumns.DisplayMember = "FullName";
-				lstColumns.ValueMember = "Name";
-
-				for (int i = 0; i < lstColumns.Items.Count; i++)
-				{
-					lstColumns.SetItemChecked(i, true);
-				}
-
-			}
-			catch (Exception ex)
-			{
-				MessageBox.Show("Error with shape file: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				lstColumns.SetItemChecked(i, true);
 			}
 		}
+		catch (Exception ex)
+		{
+			MessageBox.Show($"Error with shape file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+		}
+	}
 
 		#endregion
 
-		#region Import Stuff
+	#region Import Stuff
 
-		private void ImportShapeFile(bool safeMode)
+	private void ImportShapeFile(bool safeMode)
+	{
+		try
 		{
-			try
-			{
+			_importer = new ShapeFileImporter(txtSHP.Text);
+			_importer.ProgressChanged += _importer_ProgressChanged;
+			_importer.Done += importer_Done;
+			_importer.Error += importer_Error;
 
-				// txtCoordSys.Text, txtConString.Text, chkDrop.Checked, radGeog.Checked, chkSRID.Checked ? txtSrid.Text : null
-				_importer = new ShapeFileImporter(txtSHP.Text);
-				_importer.ProgressChanged += new EventHandler<ProgressChangedEventArgs>(_importer_ProgressChanged);
-				_importer.Done += new EventHandler(importer_Done);
-				_importer.Error += new EventHandler<ShapeImportExceptionEventArgs>(importer_Error);
+			toolStripProgressBar1.Value = 0;
+			toolStripProgressBar1.Maximum = 100;
 
-				toolStripProgressBar1.Value = 0;
-				toolStripProgressBar1.Maximum = 100;
+			List<string> selectedFields = [];
+			foreach (var item in lstColumns.CheckedItems)
+				selectedFields.Add(((ShapeField)item).Name);
 
-				List<string> selectedFields = new List<string>();
-				foreach (var item in lstColumns.CheckedItems)
-					selectedFields.Add(((ShapeField)item).Name);
+			enSpatialType spatialType = radGeog.Checked ? enSpatialType.geography
+				: radGeom.Checked ? enSpatialType.geometry
+				: enSpatialType.both;
 
-
-				if (safeMode)
-					_importer.ImportShapeFile(txtConString.Text,
+			if (safeMode)
+				_importer.ImportShapeFile(
+					txtConString.Text,
 					chkReproject.Checked ? txtCoordSys.Text : null,
 					chkDrop.Checked,
-					radGeog.Checked ? enSpatialType.geography : radGeom.Checked ? enSpatialType.geometry : enSpatialType.both,
+					spatialType,
 					chkSRID.Checked ? int.Parse(txtSrid.Text) : 0,
-					txtTableName.Text, txtSchema.Text,
+					txtTableName.Text,
+					txtSchema.Text,
 					txtIDCol.Text,
 					txtGeomCol.Text,
 					selectedFields);
-				else
-					_importer.ImportShapeFile_Direct(txtConString.Text,
-						chkReproject.Checked ? txtCoordSys.Text : null,
-						chkDrop.Checked,
-						radGeog.Checked ? enSpatialType.geography : radGeom.Checked ? enSpatialType.geometry : enSpatialType.both,
-						chkSRID.Checked ? int.Parse(txtSrid.Text) : 0,
-						txtTableName.Text, txtSchema.Text,
-                        txtIDCol.Text,
-						txtGeomCol.Text,
-						selectedFields);
-
-
-			}
-			catch (Exception ex)
-			{
-				MessageBox.Show("Error: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-			}
-			finally
-			{
-
-			}
-
-		}
-
-		private void importer_Error(object sender, ShapeImportExceptionEventArgs e)
-		{
-			showErrorDelegate del = new showErrorDelegate(showError);
-			this.Invoke(del, new object[] { e });
-
-		}
-		private void showError(ShapeImportExceptionEventArgs ex)
-		{
-			if (ex.IsTerminating)
-			{
-				MessageBox.Show(this, "Error: " + ((Exception)ex.ExceptionObject).Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-			}
 			else
-			{
-				if (MessageBox.Show(this, string.Format("Error: {0}\n\n" +
-									"Current shape:\nIndex: #{1}\n{2}" +
-									"\nShape geometry has been written to log file." +
-									"\nClick OK to ignore, Cancel to abort."
-									, ((Exception)ex.ExceptionObject).Message
-									, ex.ShapeIndex
-									, ex.ShapeInfo)
-									, "Error", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) == System.Windows.Forms.DialogResult.Cancel)
-					_importer.CancelAsync();
-				else
-					ex.Ignore = true;
-			}
-
+				_importer.ImportShapeFile_Direct(
+					txtConString.Text,
+					chkReproject.Checked ? txtCoordSys.Text : null,
+					chkDrop.Checked,
+					spatialType,
+					chkSRID.Checked ? int.Parse(txtSrid.Text) : 0,
+					txtTableName.Text,
+					txtSchema.Text,
+					txtIDCol.Text,
+					txtGeomCol.Text,
+					selectedFields);
 		}
-
-		private void importer_Done(object sender, EventArgs e)
+		catch (Exception ex)
 		{
-			btnCancel.Visible = false;
-			btnImport.Visible = true;
-			toolStripProgressBar1.Visible = false;
-
-			toolStripProgressBar1.Value = 0;
-			toolStripStatusLabel1.Text = "Ready";
-
-			MessageBox.Show(this, "Shape file imported.", "Done", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-			//Shape2SqlServerTrace.Source.Close();
+			MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 		}
-
-		void _importer_ProgressChanged(object sender, ProgressChangedEventArgs e)
-		{
-			progressChangedDelegate del = new progressChangedDelegate(doChangeProgress);
-			this.Invoke(del, new object[] { e.ProgressPercentage, e.UserState.ToString() });
-		}
-
-		private void doChangeProgress(int value, string message)
-		{
-			toolStripProgressBar1.Value = Math.Min(toolStripProgressBar1.Maximum, value);
-			toolStripStatusLabel1.Text = message;
-		}
-
-
-
-		#endregion
-
 	}
+
+	private void importer_Error(object? sender, ShapeImportExceptionEventArgs e)
+	{
+		showErrorDelegate del = new(showError);
+		Invoke(del, [e]);
+	}
+
+	private void showError(ShapeImportExceptionEventArgs ex)
+	{
+		if (ex.IsTerminating)
+		{
+			MessageBox.Show(this, $"Error: {((Exception)ex.ExceptionObject).Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+		}
+		else
+		{
+			string message = $"Error: {((Exception)ex.ExceptionObject).Message}\n\n" +
+							 $"Current shape:\nIndex: #{ex.ShapeIndex}\n{ex.ShapeInfo}" +
+							 "\nShape geometry has been written to log file." +
+							 "\nClick OK to ignore, Cancel to abort.";
+
+			if (MessageBox.Show(this, message, "Error", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) == DialogResult.Cancel)
+				_importer?.CancelAsync();
+			else
+				ex.Ignore = true;
+		}
+	}
+
+	private void importer_Done(object? sender, EventArgs e)
+	{
+		btnCancel.Visible = false;
+		btnImport.Visible = true;
+		toolStripProgressBar1.Visible = false;
+
+		toolStripProgressBar1.Value = 0;
+		toolStripStatusLabel1.Text = "Ready";
+
+		MessageBox.Show(this, "Shape file imported.", "Done", MessageBoxButtons.OK, MessageBoxIcon.Information);
+	}
+
+	void _importer_ProgressChanged(object? sender, ProgressChangedEventArgs e)
+	{
+		progressChangedDelegate del = new(doChangeProgress);
+		Invoke(del, [e.ProgressPercentage, e.UserState?.ToString() ?? ""]);
+	}
+
+	private void doChangeProgress(int value, string message)
+	{
+		toolStripProgressBar1.Value = Math.Min(toolStripProgressBar1.Maximum, value);
+		toolStripStatusLabel1.Text = message;
+	}
+
+	#endregion
 }
 
 
