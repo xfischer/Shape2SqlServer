@@ -16,13 +16,15 @@ internal class ShapeFileReaderBulk : IEnumerable, IDataReader, IDataRecord
     private readonly EventHandler<ShapeImportExceptionEventArgs>? _errorHandler;
     private readonly enSpatialType _spatialType;
     private readonly int _srid;
+    private readonly Microsoft.Extensions.Logging.ILogger _logger;
     private int _curRowIndex;
 
-    public ShapeFileReaderBulk(string shapeFile, ICoordinateTransformation? coordTransform, enSpatialType spatialType, int SRID, EventHandler<ShapeImportExceptionEventArgs>? errorHandler)
+    public ShapeFileReaderBulk(string shapeFile, ICoordinateTransformation? coordTransform, enSpatialType spatialType, int SRID, Microsoft.Extensions.Logging.ILogger logger, EventHandler<ShapeImportExceptionEventArgs>? errorHandler)
     {
         _coordTransform = coordTransform;
         _spatialType = spatialType;
         _srid = SRID;
+        _logger = logger;
         _errorHandler = errorHandler;
         _curRowIndex = -1;
 
@@ -53,11 +55,11 @@ internal class ShapeFileReaderBulk : IEnumerable, IDataReader, IDataRecord
                 // Convert to sqltype
                 if (_spatialType == enSpatialType.both)
                 {
-                    v_ret = SqlServerHelper.ConvertToSqlType(geom, _srid, i == _shapeFileDataReader.FieldCount + 1, _curRowIndex);
+                    v_ret = SqlServerHelper.ConvertToSqlType(geom, _srid, i == _shapeFileDataReader.FieldCount + 1, _curRowIndex, _logger);
                 }
                 else
                 {
-                    v_ret = SqlServerHelper.ConvertToSqlType(geom, _srid, _spatialType == enSpatialType.geography, _curRowIndex);
+                    v_ret = SqlServerHelper.ConvertToSqlType(geom, _srid, _spatialType == enSpatialType.geography, _curRowIndex, _logger);
                 }
             }
             catch (Exception ex)

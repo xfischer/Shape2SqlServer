@@ -11,13 +11,11 @@ namespace Shape2SqlServer.Core;
 
 internal static class SqlServerHelper
 {
-	private static ILogger Logger => Shape2SqlServerLoggerFactory.Logger;
-
 	private const double INVALIDGEOM_BUFFER = 0.000001d;
 		private const double INVALIDGEOM_REDUCE = 0.00000025d;
 		internal static bool? REVERSE_GEOMETRIES = null;
 
-		internal static object? ConvertToSqlType(Geometry geom, int SRID, bool useGeography, int curRowIndex)
+		internal static object? ConvertToSqlType(Geometry geom, int SRID, bool useGeography, int curRowIndex, ILogger logger)
 		{
 			object? v_ret = null;
 
@@ -45,14 +43,14 @@ internal static class SqlServerHelper
 							v_geog = SqlGeography.Deserialize(new SqlBytes(geoWriter.Write(geom)));
 						if (!v_geog.STIsValid().Value)
 						{
-							Logger.LogWarning("Invalid geometry. Must call make valid: {Details}", v_geog.IsValidDetailed());
+							logger.LogWarning("Invalid geometry. Must call make valid: {Details}", v_geog.IsValidDetailed());
 							v_geog = v_geog.MakeValid();
 						}
 						v_ret = v_geog;
 					}
 					catch (OutOfMemoryException exMemory)
 					{
-						Logger.LogError(exMemory, "OutOfMemory on geom #{RowIndex}", curRowIndex);
+						logger.LogError(exMemory, "OutOfMemory on geom #{RowIndex}", curRowIndex);
 						throw;
 					}
 					catch (Exception exWriteGeom)
@@ -62,7 +60,7 @@ internal static class SqlServerHelper
 
 							enRingOrientation ringOrientation = SqlServerHelper.GetRingOrientation(geom.Coordinates);
 
-							Logger.LogWarning(exWriteGeom, "Invalid geom #{RowIndex}. Try to reverse", curRowIndex);
+							logger.LogWarning(exWriteGeom, "Invalid geom #{RowIndex}. Try to reverse", curRowIndex);
 							// Maybe bad orientation
 							SqlServerBytesWriter geogWriter = new();
 							v_ret = SqlGeography.Deserialize(new SqlBytes(geogWriter.Write(geom.Reverse())));
@@ -72,36 +70,36 @@ internal static class SqlServerHelper
 						}
 						catch (OutOfMemoryException exMemory)
 						{
-							Logger.LogError(exMemory, "OutOfMemory on geom #{RowIndex}", curRowIndex);
+							logger.LogError(exMemory, "OutOfMemory on geom #{RowIndex}", curRowIndex);
 							throw;
 						}
 						catch (Exception exReverse)
 						{
 							try
 							{
-								Logger.LogWarning(exReverse, "Bad reverse, converting to geometry");
+								logger.LogWarning(exReverse, "Bad reverse, converting to geometry");
 								// Maybe a self intersecting polygon. Use the buffer trick with the geometry
 								SqlServerBytesWriter geoWriter = new();
 								SqlGeometry sqlGeom = SqlGeometry.Deserialize(new SqlBytes(geoWriter.Write(geom)));
 								if (!sqlGeom.STIsValid().Value)
 								{
-									Logger.LogInformation("Make valid - OK");
+									logger.LogInformation("Make valid - OK");
 									v_ret = SqlGeography.STGeomFromText(new SqlChars(new SqlString(sqlGeom.MakeValid().ToString())), SRID);
 								}
 								else
 								{
-									Logger.LogInformation("Buffer - OK");
+									logger.LogInformation("Buffer - OK");
 									v_ret = SqlGeography.STGeomFromText(new SqlChars(new SqlString(sqlGeom.STBuffer(INVALIDGEOM_BUFFER).STBuffer(-INVALIDGEOM_BUFFER).Reduce(INVALIDGEOM_REDUCE).ToString())), SRID);
 								}
 							}
 							catch (OutOfMemoryException exMemory)
 							{
-								Logger.LogError(exMemory, "OutOfMemory on geom #{RowIndex}", curRowIndex);
+								logger.LogError(exMemory, "OutOfMemory on geom #{RowIndex}", curRowIndex);
 								throw;
 							}
 							catch (Exception exBuffer)
 							{
-								Logger.LogError(exBuffer, "Failed to fix geometry");
+								logger.LogError(exBuffer, "Failed to fix geometry");
 								throw;
 							}
 
@@ -114,7 +112,7 @@ internal static class SqlServerHelper
 					SqlGeometry v_retGeom = SqlGeometry.Deserialize(new SqlBytes(geoWriter.Write(geom)));
 					if (!v_retGeom.STIsValid().Value)
 					{
-						Logger.LogWarning("Invalid geometry. Must call make valid: {Details}", v_retGeom.IsValidDetailed());
+						logger.LogWarning("Invalid geometry. Must call make valid: {Details}", v_retGeom.IsValidDetailed());
 						v_retGeom = v_retGeom.MakeValid();
 					}
 					v_ret = v_retGeom;

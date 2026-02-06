@@ -12,18 +12,22 @@ namespace Shape2SqlServer;
 
 public partial class frmMain : Form
 {
+	private readonly ILoggerFactory _loggerFactory;
+	private readonly ILogger<frmMain> _logger;
 	private delegate void showErrorDelegate(ShapeImportExceptionEventArgs ex);
 	private delegate void progressChangedDelegate(int value, string message);
 	private ShapeFileImporter? _importer;
 
-	public frmMain()
+	public frmMain(ILoggerFactory loggerFactory)
 	{
+		_loggerFactory = loggerFactory;
+		_logger = _loggerFactory.CreateLogger<frmMain>();
 		InitializeComponent();
 		InitLogging();
 	}
 
 	private void InitLogging() =>
-		Shape2SqlServerLoggerFactory.Logger.LogInformation("Application started on {Date}", DateTime.Now);
+		_logger.LogInformation("Application started on {Date}", DateTime.Now);
 
 	#region User events
 
@@ -162,7 +166,7 @@ public partial class frmMain : Form
 			if (!File.Exists(shapeFile))
 				return;
 
-			ShapeFileImporter importer = new(shapeFile);
+			ShapeFileImporter importer = new(shapeFile, _loggerFactory.CreateLogger<ShapeFileImporter>());
 
 			txtSHP.Text = shapeFile;
 			lblShapeHeader.Text = $"{importer.RecordCount} {importer.ShapeType} in shapefile\n{importer.Bounds}, {importer.CoordinateSystem}";
@@ -203,7 +207,7 @@ public partial class frmMain : Form
 	{
 		try
 		{
-			_importer = new ShapeFileImporter(txtSHP.Text);
+			_importer = new ShapeFileImporter(txtSHP.Text, _loggerFactory.CreateLogger<ShapeFileImporter>());
 			_importer.ProgressChanged += _importer_ProgressChanged;
 			_importer.Done += importer_Done;
 			_importer.Error += importer_Error;

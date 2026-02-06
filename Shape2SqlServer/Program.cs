@@ -1,47 +1,56 @@
 ﻿#nullable enable
 using System;
 using System.Windows.Forms;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Extensions.Logging;
-using Shape2SqlServer.Core;
 
 namespace Shape2SqlServer;
 
 static class Program
 {
+	private static ServiceProvider? _serviceProvider;
+
+	public static ServiceProvider ServiceProvider => _serviceProvider ?? throw new InvalidOperationException("Service provider not initialized");
+
 	/// <summary>
 	/// Point d'entrée principal de l'application.
 	/// </summary>
 	[STAThread]
 	static void Main()
 	{
-		// Initialize logger factory for the WinForms application
-		InitializeLogger();
+		// Configure dependency injection
+		ConfigureServices();
 
 		// Modern Microsoft.SqlServer.Types package (v170+) handles native assembly loading automatically
 		// SqlServerTypes.Utilities.LoadNativeAssemblies(AppDomain.CurrentDomain.BaseDirectory);
 		Application.EnableVisualStyles();
 		Application.SetCompatibleTextRenderingDefault(false);
-		Application.Run(new frmMain());
+
+		// Resolve the main form from DI container
+		var mainForm = _serviceProvider!.GetRequiredService<frmMain>();
+		Application.Run(mainForm);
 	}
 
-	private static void InitializeLogger()
+	private static void ConfigureServices()
 	{
-		// Configure Serilog for file logging (Warning and above, max 10MB)
+		var services = new ServiceCollection();
+
+		// Configure logging
 		var logFilePath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs", "shape2sqlserver-.log");
 
-		var serilogLogger = new Serilog.LoggerConfiguration()
-			.MinimumLevel.Warning()
+		var serilogLogger = new LoggerConfiguration()
+			.MinimumLevel.Verbose()
 			.WriteTo.File(
 				path: logFilePath,
-				rollingInterval: Serilog.RollingInterval.Day,
+				rollingInterval: RollingInterval.Day,
 				fileSizeLimitBytes: 10_485_760, // 10 MB
 				rollOnFileSizeLimit: true,
 				retainedFileCountLimit: 7)
 			.CreateLogger();
 
-		Shape2SqlServerLoggerFactory.LoggerFactory = LoggerFactory.Create(builder =>
+		services.AddLogging(builder =>
 		{
 			builder
 				.AddSimpleConsole(options =>
@@ -53,5 +62,12 @@ static class Program
 				.AddSerilog(serilogLogger)
 				.SetMinimumLevel(LogLevel.Information);
 		});
+
+		// Register forms
+		services.AddTransient<frmMain>();
+		services.AddTransient<frmSRIDSelector>();
+		services.AddTransient<frmConnectionDialog>();
+
+		_serviceProvider = services.BuildServiceProvider();
 	}
 }

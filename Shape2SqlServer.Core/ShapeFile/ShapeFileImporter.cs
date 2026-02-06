@@ -21,6 +21,7 @@ namespace Shape2SqlServer.Core;
 /// </summary>
 public sealed class ShapeFileImporter
 {
+	private readonly ILogger<ShapeFileImporter> _logger;
 	private string _shapeFile;
 	private Dictionary<string, Type>? _fields;
 	private ICoordinateTransformation? _transform;
@@ -108,8 +109,10 @@ public sealed class ShapeFileImporter
 	/// Creates an instance of the ShapeFileImporter from a given shape file
 	/// </summary>
 	/// <param name="shapeFileName">Shapefile to import</param>
-	public ShapeFileImporter(string shapeFileName)
+	/// <param name="logger">Optional logger instance for dependency injection</param>
+	public ShapeFileImporter(string shapeFileName, ILogger<ShapeFileImporter>? logger = null)
 	{
+		_logger = logger ?? Shape2SqlServerLoggerFactory.CreateLogger<ShapeFileImporter>();
 		try
 		{
 			_shapeFile = shapeFileName;
@@ -158,7 +161,7 @@ public sealed class ShapeFileImporter
 			{
 				#region Work
 
-				Shape2SqlServerLoggerFactory.Logger.LogInformation("Worker started");
+				_logger.LogInformation("Worker started");
 				_worker.ReportProgress(0, "Starting...");
 
 				#region Init ICoordinateTransformation
@@ -180,7 +183,7 @@ public sealed class ShapeFileImporter
 				{
 					using (SqlConnection db = new(connectionString))
 					{
-						Shape2SqlServerLoggerFactory.Logger.LogInformation("Opening SQL connection");
+						_logger.LogInformation("Opening SQL connection");
 						db.Open();
 
 						SqlTransaction transaction = db.BeginTransaction(IsolationLevel.Serializable);
@@ -198,7 +201,7 @@ public sealed class ShapeFileImporter
 																											 select field).ToArray();
 							List<SqlColumnDescriptor> sqlFields = ShapeFileHelper.TranslateDbfTypesToSql(fields);
 
-							Shape2SqlServerLoggerFactory.Logger.LogInformation($"Create SQL table {tableName}");
+							_logger.LogInformation($"Create SQL table {tableName}");
 							string sqlScriptCreateTable = SqlServerModel.GenerateCreateTableScript(tableName, schema, sqlFields, spatialType, recreateTable, geomcolName, IdColName);
 							DataTable dataTable = SqlServerModel.GenerateDataTable(tableName, sqlFields, spatialType, recreateTable, geomcolName, IdColName);
 							new SqlCommand(sqlScriptCreateTable, db, transaction).ExecuteNonQuery();
@@ -239,11 +242,11 @@ public sealed class ShapeFileImporter
 										case enSpatialType.geography:
 											try
 											{
-												SqlNativeGeomList.Add(SqlServerHelper.ConvertToSqlType(geomOut, SRID, true, numRecord));
+												SqlNativeGeomList.Add(SqlServerHelper.ConvertToSqlType(geomOut, SRID, true, numRecord, _logger));
 											}
 											catch (Exception exGeomConvert)
 											{
-												Shape2SqlServerLoggerFactory.Logger.LogError(exGeomConvert, "Error Converting geography");
+												_logger.LogError(exGeomConvert, "Error Converting geography");
 												var args = new ShapeImportExceptionEventArgs(exGeomConvert, false, shapeDataReader.DumpCurrentRecord(), shapeDataReader.Geometry, numRecord);
 												if (Raise_Error(args))
 												{
@@ -262,11 +265,11 @@ public sealed class ShapeFileImporter
 										case enSpatialType.geometry:
 											try
 											{
-												SqlNativeGeomList.Add(SqlServerHelper.ConvertToSqlType(geomOut, SRID, false, numRecord));
+												SqlNativeGeomList.Add(SqlServerHelper.ConvertToSqlType(geomOut, SRID, false, numRecord, _logger));
 											}
 											catch (Exception exGeomConvert)
 											{
-												Shape2SqlServerLoggerFactory.Logger.LogError(exGeomConvert, "Error Converting geometry");
+												_logger.LogError(exGeomConvert, "Error Converting geometry");
 												var args = new ShapeImportExceptionEventArgs(exGeomConvert, false, shapeDataReader.DumpCurrentRecord(), shapeDataReader.Geometry, numRecord);
 												if (Raise_Error(args))
 												{
@@ -287,13 +290,13 @@ public sealed class ShapeFileImporter
 											bool geomConverted = false;
 											try
 											{
-												SqlNativeGeomList.Add(SqlServerHelper.ConvertToSqlType(geomOut, SRID, false, numRecord));
+												SqlNativeGeomList.Add(SqlServerHelper.ConvertToSqlType(geomOut, SRID, false, numRecord, _logger));
 												geomConverted = true;
-												SqlNativeGeomList.Add(SqlServerHelper.ConvertToSqlType(geomOut, SRID, true, numRecord));
+												SqlNativeGeomList.Add(SqlServerHelper.ConvertToSqlType(geomOut, SRID, true, numRecord, _logger));
 											}
 											catch (Exception exGeomConvert)
 											{
-												Shape2SqlServerLoggerFactory.Logger.LogError(exGeomConvert, "Error Converting geometry or geography");
+												_logger.LogError(exGeomConvert, "Error Converting geometry or geography");
 												var args = new ShapeImportExceptionEventArgs(exGeomConvert, false, shapeDataReader.DumpCurrentRecord(), shapeDataReader.Geometry, numRecord);
 												if (Raise_Error(args))
 												{
@@ -335,7 +338,7 @@ public sealed class ShapeFileImporter
 								}
 								catch (Exception exGeom)
 								{
-									Shape2SqlServerLoggerFactory.Logger.LogError(exGeom, "Error Converting geometry");
+									_logger.LogError(exGeom, "Error Converting geometry");
 									Raise_Error(new ShapeImportExceptionEventArgs(exGeom, true, shapeDataReader.DumpCurrentRecord(), shapeDataReader.Geometry, numRecord));
 								}
 							}
@@ -368,7 +371,7 @@ public sealed class ShapeFileImporter
 									}
 									catch (SqlException ex)
 									{
-										Shape2SqlServerLoggerFactory.Logger.LogError(ex, "Error inserting");
+										_logger.LogError(ex, "Error inserting");
 										bulk.Close();
 									}
 
@@ -379,14 +382,14 @@ public sealed class ShapeFileImporter
 
 							if (_worker.CancellationPending)
 							{
-								Shape2SqlServerLoggerFactory.Logger.LogWarning("Rolling back transaction");
+								_logger.LogWarning("Rolling back transaction");
 								transaction.Rollback();
 							}
 							else
 							{
 								#region Create spatial index
 
-								Shape2SqlServerLoggerFactory.Logger.LogInformation("Create spatial index");
+								_logger.LogInformation("Create spatial index");
 								_worker.ReportProgress(100, "Creating index...");
 
 								// Create spatial index
@@ -397,7 +400,7 @@ public sealed class ShapeFileImporter
 
 								#endregion
 
-								Shape2SqlServerLoggerFactory.Logger.LogInformation("Commit transaction");
+								_logger.LogInformation("Commit transaction");
 								transaction.Commit();
 
 							}
@@ -405,16 +408,16 @@ public sealed class ShapeFileImporter
 						}
 						catch (Exception ex)
 						{
-							Shape2SqlServerLoggerFactory.Logger.LogError(ex, "Error");
+							_logger.LogError(ex, "Error");
 
-							Shape2SqlServerLoggerFactory.Logger.LogWarning("Rolling back transaction");
+							_logger.LogWarning("Rolling back transaction");
 							transaction.Rollback();
 							if (!Raise_Error(new ShapeImportExceptionEventArgs(ex, true)))
 								throw;
 						}
 
 
-						Shape2SqlServerLoggerFactory.Logger.LogTrace("closing DB");
+						_logger.LogTrace("closing DB");
 						db.Close();
 					}
 				}
@@ -422,7 +425,7 @@ public sealed class ShapeFileImporter
 			}
 			catch (Exception ex)
 			{
-				Shape2SqlServerLoggerFactory.Logger.LogError(ex, "Error");
+				_logger.LogError(ex, "Error");
 
 				Raise_Error(new ShapeImportExceptionEventArgs(ex, true));
 
@@ -469,7 +472,7 @@ public sealed class ShapeFileImporter
 			{
 				#region Work
 				int recordIndex = 1;
-				Shape2SqlServerLoggerFactory.Logger.LogInformation("Worker started");
+				_logger.LogInformation("Worker started");
 				_worker.ReportProgress(0, "Starting...");
 
 				#region Init ICoordinateTransformation
@@ -495,7 +498,7 @@ public sealed class ShapeFileImporter
 
 					using (SqlBulkCopy bulk = new(db, SqlBulkCopyOptions.Default, transaction))
 					{
-						using (ShapeFileReaderBulk shapeDataReader = new(_shapeFile, _transform, spatialType, SRID, Internal_RaiseError))
+						using (ShapeFileReaderBulk shapeDataReader = new(_shapeFile, _transform, spatialType, SRID, _logger, Internal_RaiseError))
 						{
 
 							try
@@ -514,7 +517,7 @@ public sealed class ShapeFileImporter
 
 								};
 
-								Shape2SqlServerLoggerFactory.Logger.LogInformation("Writing 0 records");
+								_logger.LogInformation("Writing 0 records");
 								_worker.ReportProgress(0, "Writing 0 records");
 
 								#region Column mappings
@@ -547,7 +550,7 @@ public sealed class ShapeFileImporter
 								#region create table
 								List<SqlColumnDescriptor> sqlFields = ShapeFileHelper.TranslateDbfTypesToSql([.. fieldsList]);
 
-								Shape2SqlServerLoggerFactory.Logger.LogInformation($"Creating table {tableName}");
+								_logger.LogInformation($"Creating table {tableName}");
 								string sqlScriptCreateTable = SqlServerModel.GenerateCreateTableScript(tableName, schema, sqlFields, spatialType, recreateTable, geomcolName, IdColName);
 								DataTable dataTable = SqlServerModel.GenerateDataTable(tableName, sqlFields, spatialType, recreateTable, geomcolName, IdColName);
 								new SqlCommand(sqlScriptCreateTable, db, transaction).ExecuteNonQuery();
@@ -561,11 +564,11 @@ public sealed class ShapeFileImporter
 								catch (SqlException)
 								{
 									bulkInError = true;
-									Shape2SqlServerLoggerFactory.Logger.LogError("SqlBulkImport throw SqlException");
+									_logger.LogError("SqlBulkImport throw SqlException");
 								}
 								catch (Exception exBulk)
 								{
-									Shape2SqlServerLoggerFactory.Logger.LogError(exBulk, "SqlBulkImport throw Exception");
+									_logger.LogError(exBulk, "SqlBulkImport throw Exception");
 									Raise_Error(new ShapeImportExceptionEventArgs(exBulk, true, shapeDataReader.DumpCurrentRecord(), shapeDataReader.Geometry, recordIndex));
 									bulkInError = true;
 
@@ -575,14 +578,14 @@ public sealed class ShapeFileImporter
 
 								if (_worker.CancellationPending || bulkInError)
 								{
-									Shape2SqlServerLoggerFactory.Logger.LogWarning("Rolling back transaction");
+									_logger.LogWarning("Rolling back transaction");
 									transaction.Rollback();
 								}
 								else
 								{
 									#region Create spatial index
 
-									Shape2SqlServerLoggerFactory.Logger.LogInformation("Creating spatial index...");
+									_logger.LogInformation("Creating spatial index...");
 									_worker.ReportProgress(100, "Creating index...");
 
 									// Create spatial index
@@ -594,7 +597,7 @@ public sealed class ShapeFileImporter
 
 									#endregion
 
-									Shape2SqlServerLoggerFactory.Logger.LogInformation("Commit transaction");
+									_logger.LogInformation("Commit transaction");
 									transaction.Commit();
 
 								}
@@ -602,20 +605,20 @@ public sealed class ShapeFileImporter
 							}
 							catch (Exception ex)
 							{
-								Shape2SqlServerLoggerFactory.Logger.LogError(ex, "Error");
-								Shape2SqlServerLoggerFactory.Logger.LogWarning("Rolling back transaction");
+								_logger.LogError(ex, "Error");
+								_logger.LogWarning("Rolling back transaction");
 								transaction.Rollback();
 								Raise_Error(new ShapeImportExceptionEventArgs(ex, true));
 							}
 							finally
 							{
-								Shape2SqlServerLoggerFactory.Logger.LogTrace("SqlBulkCopy.Close()");
+								_logger.LogTrace("SqlBulkCopy.Close()");
 								bulk.Close();
 							}
 						}
 					}
 
-					Shape2SqlServerLoggerFactory.Logger.LogTrace("db.Close()");
+					_logger.LogTrace("db.Close()");
 					db.Close();
 				}
 
@@ -624,7 +627,7 @@ public sealed class ShapeFileImporter
 			}
 			catch (Exception ex)
 			{
-				Shape2SqlServerLoggerFactory.Logger.LogError(ex, "Unhandled exception");
+				_logger.LogError(ex, "Unhandled exception");
 				Raise_Error(new ShapeImportExceptionEventArgs(ex, true));
 			}
 
@@ -655,11 +658,11 @@ public sealed class ShapeFileImporter
 		{
 			if (args.ShapeInfo == null)
 			{
-				Shape2SqlServerLoggerFactory.Logger.LogError($"{((Exception)args.ExceptionObject).Message}");
+				_logger.LogError($"{((Exception)args.ExceptionObject).Message}");
 			}
 			else
 			{
-				Shape2SqlServerLoggerFactory.Logger.LogError($"{((Exception)args.ExceptionObject).Message} Index={args.ShapeIndex}, Attributes={args.ShapeInfo.Replace("\n", ", ")}, \r\nGeom={args.ShapeGeom}, \r\nReversedGeom={args.ShapeGeom.Reverse()}");
+				_logger.LogError($"{((Exception)args.ExceptionObject).Message} Index={args.ShapeIndex}, Attributes={args.ShapeInfo.Replace("\n", ", ")}, \r\nGeom={args.ShapeGeom}, \r\nReversedGeom={args.ShapeGeom.Reverse()}");
 			}
 
 			Error?.Invoke(this, args);
@@ -684,7 +687,7 @@ public sealed class ShapeFileImporter
 
 	private void _worker_RunWorkerCompleted(object? sender, RunWorkerCompletedEventArgs e)
 	{
-		Shape2SqlServerLoggerFactory.Logger.LogInformation("Worker completed");
+		_logger.LogInformation("Worker completed");
 		Done?.Invoke(this, new EventArgs());
 	}
 
@@ -694,7 +697,7 @@ public sealed class ShapeFileImporter
 
 	private void Init()
 	{
-		Shape2SqlServerLoggerFactory.Logger.LogInformation("Trace started");
+		_logger.LogInformation("Trace started");
 
 		// Check files
 		ShapeFileHelper.CheckFiles(_shapeFile);

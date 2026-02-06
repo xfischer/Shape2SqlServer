@@ -6,7 +6,10 @@
       "Bash(for file in ./ShapeFile/ShapeFileHelper.cs ./ShapeFile/ShapeFileImporter.cs ./ShapeFile/ShapeFileReaderBulk.cs ./ShapeFile/ShapeImportExceptionEventArgs.cs ./SqlServer/SqlServerHelper.cs)",
       "Bash(do sed -i 's/IGeometry/Geometry/g' \"$file\")",
       "Bash(done)",
-      "Bash(dotnet add:*)"
+      "Bash(dotnet add:*)",
+      "Bash(git checkout:*)",
+      "Bash(findstr:*)",
+      "Bash(git stash:*)"
     ]
   }
 }
