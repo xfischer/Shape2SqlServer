@@ -1,39 +1,41 @@
-﻿namespace Shape2SqlServer
+﻿#nullable enable
+
+namespace Shape2SqlServer;
+
+partial class frmSRIDSelector
 {
-	partial class frmSRIDSelector
+	/// <summary>
+	/// Required designer variable.
+	/// </summary>
+	private System.ComponentModel.IContainer? components = null;
+
+	/// <summary>
+	/// Clean up any resources being used.
+	/// </summary>
+	/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+	protected override void Dispose(bool disposing)
 	{
-		/// <summary>
-		/// Required designer variable.
-		/// </summary>
-		private System.ComponentModel.IContainer components = null;
-
-		/// <summary>
-		/// Clean up any resources being used.
-		/// </summary>
-		/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-		protected override void Dispose(bool disposing)
+		if (disposing && components != null)
 		{
-			if (disposing && (components != null))
-			{
-				components.Dispose();
-			}
-			base.Dispose(disposing);
+			components.Dispose();
 		}
+		base.Dispose(disposing);
+	}
 
-		#region Windows Form Designer generated code
+	#region Windows Form Designer generated code
 
-		/// <summary>
-		/// Required method for Designer support - do not modify
-		/// the contents of this method with the code editor.
-		/// </summary>
-		private void InitializeComponent()
-		{
-			this.cmbSRID = new System.Windows.Forms.ComboBox();
-			this.label1 = new System.Windows.Forms.Label();
-			this.label2 = new System.Windows.Forms.Label();
-			this.txtSRIDFind = new System.Windows.Forms.TextBox();
-			this.button1 = new System.Windows.Forms.Button();
-			this.btnOK = new System.Windows.Forms.Button();
+	/// <summary>
+	/// Required method for Designer support - do not modify
+	/// the contents of this method with the code editor.
+	/// </summary>
+	private void InitializeComponent()
+	{
+		this.cmbSRID = new System.Windows.Forms.ComboBox();
+		this.label1 = new System.Windows.Forms.Label();
+		this.label2 = new System.Windows.Forms.Label();
+		this.txtSRIDFind = new System.Windows.Forms.TextBox();
+		this.button1 = new System.Windows.Forms.Button();
+		this.btnOK = new System.Windows.Forms.Button();
 			this.SuspendLayout();
 			// 
 			// cmbSRID
@@ -115,15 +117,14 @@
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
-		}
-
-		#endregion
-
-		private System.Windows.Forms.ComboBox cmbSRID;
-		private System.Windows.Forms.Label label1;
-		private System.Windows.Forms.Label label2;
-		private System.Windows.Forms.TextBox txtSRIDFind;
-		private System.Windows.Forms.Button button1;
-		private System.Windows.Forms.Button btnOK;
 	}
+
+	#endregion
+
+	private System.Windows.Forms.ComboBox cmbSRID = null!;
+	private System.Windows.Forms.Label label1 = null!;
+	private System.Windows.Forms.Label label2 = null!;
+	private System.Windows.Forms.TextBox txtSRIDFind = null!;
+	private System.Windows.Forms.Button button1 = null!;
+	private System.Windows.Forms.Button btnOK = null!;
 }

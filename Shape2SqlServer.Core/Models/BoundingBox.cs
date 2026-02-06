@@ -1,56 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+#nullable enable
+using System;
 
-namespace Shape2SqlServer.Core
+namespace Shape2SqlServer.Core;
+
+/// <summary>
+/// Represents a geographic bounding box with immutable semantics.
+/// </summary>
+internal record BoundingBox(double MinX, double MinY, double MaxX, double MaxY)
 {
-	internal class BoundingBox
-	{
-		public double minX { get; set; }
-		public double minY { get; set; }
-		public double maxX { get; set; }
-		public double maxY { get; set; }
+	/// <summary>
+	/// Gets the width of the bounding box (MaxX - MinX).
+	/// </summary>
+	public double Width => MaxX - MinX;
 
-		public double Width
-		{
-			get { return maxX - minX; }
-		}
+	/// <summary>
+	/// Gets the height of the bounding box (MaxY - MinY).
+	/// </summary>
+	public double Height => MaxY - MinY;
 
-		public double Height
-		{
-			get { return maxY - minY; }
-		}
+	/// <summary>
+	/// Gets the aspect ratio (Width / Height).
+	/// </summary>
+	public double AspectRatio => Width / Height;
 
-		public double AspectRatio
-		{
-			get { return this.Width / this.Height; }
-		}
-
-		public BoundingBox(double minx, double miny, double maxx, double maxy)
-		{
-			this.minX = minx;
-			this.minY = miny;
-			this.maxX = maxx;
-			this.maxY = maxy;
-		}
-
-		public BoundingBox()
-		{
-		}
-
-		public override string ToString()
-		{
-			return string.Format("[{0}, {1}, {2}, {3}]", minX, minY, maxX, maxY);
-		}
-
-		public BoundingBox Clone()
-		{
-			return new BoundingBox(minX, minY, maxX, maxY);
-		}
-
-
-	}
+	/// <summary>
+	/// Returns a string representation of the bounding box.
+	/// </summary>
+	public override string ToString() => $"[{MinX}, {MinY}, {MaxX}, {MaxY}]";
 }
-
-

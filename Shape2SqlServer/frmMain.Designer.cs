@@ -1,11 +1,13 @@
-﻿namespace Shape2SqlServer
+﻿#nullable disable
+
+namespace Shape2SqlServer;
+
+partial class frmMain
 {
-	partial class frmMain
-	{
-		/// <summary>
-		/// Variable nécessaire au concepteur.
-		/// </summary>
-		private System.ComponentModel.IContainer components = null;
+	/// <summary>
+	/// Variable nécessaire au concepteur.
+	/// </summary>
+	private System.ComponentModel.IContainer components = null;
 
 		/// <summary>
 		/// Nettoyage des ressources utilisées.
@@ -52,6 +54,7 @@
             this.lnkCSSelector = new System.Windows.Forms.LinkLabel();
             this.txtSrid = new System.Windows.Forms.TextBox();
             this.chkSRID = new System.Windows.Forms.CheckBox();
+            this.chkCreateSpatialIndex = new System.Windows.Forms.CheckBox();
             this.txtCoordSys = new System.Windows.Forms.TextBox();
             this.radGeog = new System.Windows.Forms.RadioButton();
             this.radGeom = new System.Windows.Forms.RadioButton();
@@ -250,6 +253,7 @@
             this.groupBox2.Controls.Add(this.lnkCSSelector);
             this.groupBox2.Controls.Add(this.txtSrid);
             this.groupBox2.Controls.Add(this.chkSRID);
+            this.groupBox2.Controls.Add(this.chkCreateSpatialIndex);
             this.groupBox2.Controls.Add(this.txtCoordSys);
             this.groupBox2.Controls.Add(this.radGeog);
             this.groupBox2.Controls.Add(this.radGeom);
@@ -297,7 +301,7 @@
             this.txtSrid.Text = "4326";
             // 
             // chkSRID
-            // 
+            //
             this.chkSRID.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.chkSRID.AutoSize = true;
             this.chkSRID.Location = new System.Drawing.Point(15, 154);
@@ -307,7 +311,20 @@
             this.chkSRID.Text = "Set SRID";
             this.chkSRID.UseVisualStyleBackColor = true;
             this.chkSRID.CheckedChanged += new System.EventHandler(this.chkSRID_CheckedChanged);
-            // 
+            //
+            // chkCreateSpatialIndex
+            //
+            this.chkCreateSpatialIndex.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.chkCreateSpatialIndex.AutoSize = true;
+            this.chkCreateSpatialIndex.Checked = true;
+            this.chkCreateSpatialIndex.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkCreateSpatialIndex.Location = new System.Drawing.Point(15, 177);
+            this.chkCreateSpatialIndex.Name = "chkCreateSpatialIndex";
+            this.chkCreateSpatialIndex.Size = new System.Drawing.Size(126, 17);
+            this.chkCreateSpatialIndex.TabIndex = 20;
+            this.chkCreateSpatialIndex.Text = "Create spatial index";
+            this.chkCreateSpatialIndex.UseVisualStyleBackColor = true;
+            //
             // txtCoordSys
             // 
             this.txtCoordSys.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -468,40 +485,40 @@
 
 		#endregion
 
-		private System.Windows.Forms.Button btnImport;
-		private System.Windows.Forms.TextBox txtSHP;
-		private System.Windows.Forms.Button btnBrowse;
-		private System.Windows.Forms.OpenFileDialog dlgOpen;
-		private System.Windows.Forms.Label label1;
-		private System.Windows.Forms.Label label2;
-		private System.Windows.Forms.Button btnConString;
-		private System.Windows.Forms.TextBox txtConString;
-		private System.Windows.Forms.Label lblShapeHeader;
-		private System.Windows.Forms.StatusStrip statusStrip1;
-		private System.Windows.Forms.GroupBox groupBox1;
-		private System.Windows.Forms.Label label5;
-		private System.Windows.Forms.TextBox txtGeomCol;
-		private System.Windows.Forms.TextBox txtIDCol;
-		private System.Windows.Forms.Label label6;
-		private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
-		private System.Windows.Forms.ToolStripProgressBar toolStripProgressBar1;
-		private System.Windows.Forms.CheckedListBox lstColumns;
-		private System.Windows.Forms.GroupBox groupBox2;
-		private System.Windows.Forms.TextBox txtTableName;
-		private System.Windows.Forms.Label label7;
-		private System.Windows.Forms.CheckBox chkReproject;
-		private System.Windows.Forms.CheckBox chkDrop;
-		private System.Windows.Forms.TextBox txtCoordSys;
-		private System.Windows.Forms.TextBox txtSrid;
-		private System.Windows.Forms.CheckBox chkSRID;
-		private System.Windows.Forms.RadioButton radGeog;
-		private System.Windows.Forms.RadioButton radGeom;
-		private System.Windows.Forms.Button btnCancel;
-		private System.Windows.Forms.LinkLabel lnkCSSelector;
-		private System.Windows.Forms.CheckBox chkSafeMode;
-		private System.Windows.Forms.RadioButton radBoth;
-        private System.Windows.Forms.TextBox txtSchema;
-        private System.Windows.Forms.Label label3;
-    }
+	private System.Windows.Forms.Button btnImport = null!;
+	private System.Windows.Forms.TextBox txtSHP = null!;
+	private System.Windows.Forms.Button btnBrowse = null!;
+	private System.Windows.Forms.OpenFileDialog dlgOpen = null!;
+	private System.Windows.Forms.Label label1 = null!;
+	private System.Windows.Forms.Label label2 = null!;
+	private System.Windows.Forms.Button btnConString = null!;
+	private System.Windows.Forms.TextBox txtConString = null!;
+	private System.Windows.Forms.Label lblShapeHeader = null!;
+	private System.Windows.Forms.StatusStrip statusStrip1 = null!;
+	private System.Windows.Forms.GroupBox groupBox1 = null!;
+	private System.Windows.Forms.Label label5 = null!;
+	private System.Windows.Forms.TextBox txtGeomCol = null!;
+	private System.Windows.Forms.TextBox txtIDCol = null!;
+	private System.Windows.Forms.Label label6 = null!;
+	private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1 = null!;
+	private System.Windows.Forms.ToolStripProgressBar toolStripProgressBar1 = null!;
+	private System.Windows.Forms.CheckedListBox lstColumns = null!;
+	private System.Windows.Forms.GroupBox groupBox2 = null!;
+	private System.Windows.Forms.TextBox txtTableName = null!;
+	private System.Windows.Forms.Label label7 = null!;
+	private System.Windows.Forms.CheckBox chkReproject = null!;
+	private System.Windows.Forms.CheckBox chkDrop = null!;
+	private System.Windows.Forms.TextBox txtCoordSys = null!;
+	private System.Windows.Forms.TextBox txtSrid = null!;
+	private System.Windows.Forms.CheckBox chkSRID = null!;
+	private System.Windows.Forms.RadioButton radGeog = null!;
+	private System.Windows.Forms.RadioButton radGeom = null!;
+	private System.Windows.Forms.Button btnCancel = null!;
+	private System.Windows.Forms.LinkLabel lnkCSSelector = null!;
+	private System.Windows.Forms.CheckBox chkSafeMode = null!;
+	private System.Windows.Forms.RadioButton radBoth = null!;
+	private System.Windows.Forms.TextBox txtSchema = null!;
+	private System.Windows.Forms.Label label3 = null!;
+	private System.Windows.Forms.CheckBox chkCreateSpatialIndex = null!;
 }
 

@@ -1,77 +1,78 @@
+#nullable enable
 using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
 using Microsoft.Data.SqlClient;
 
-namespace Shape2SqlServer
+namespace Shape2SqlServer;
+
+public partial class frmConnectionDialog : Form
 {
-	public partial class frmConnectionDialog : Form
+	private Label lblServer = null!;
+	private TextBox txtServer = null!;
+	private Label lblDatabase = null!;
+	private TextBox txtDatabase = null!;
+	private GroupBox grpAuthentication = null!;
+	private RadioButton rbWindowsAuth = null!;
+	private RadioButton rbSqlAuth = null!;
+	private Label lblUsername = null!;
+	private TextBox txtUsername = null!;
+	private Label lblPassword = null!;
+	private TextBox txtPassword = null!;
+	private Button btnTest = null!;
+	private Label lblStatus = null!;
+	private CheckBox chkTrustServerCertificate = null!;
+	private Button btnOK = null!;
+	private Button btnCancel = null!;
+
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	public string ConnectionString { get; set; } = "";
+
+	public frmConnectionDialog()
 	{
-		private Label lblServer;
-		private TextBox txtServer;
-		private Label lblDatabase;
-		private TextBox txtDatabase;
-		private GroupBox grpAuthentication;
-		private RadioButton rbWindowsAuth;
-		private RadioButton rbSqlAuth;
-		private Label lblUsername;
-		private TextBox txtUsername;
-		private Label lblPassword;
-		private TextBox txtPassword;
-		private Button btnTest;
-		private Label lblStatus;
-	private CheckBox chkTrustServerCertificate;
-		private Button btnOK;
-		private Button btnCancel;
+		InitializeComponent();
+		LoadSettings();
+		LoadConnectionString();
+	}
 
-		[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-		public string ConnectionString { get; set; }
-
-		public frmConnectionDialog()
-		{
-			InitializeComponent();
-			LoadSettings();
-			LoadConnectionString();
-		}
-
-        private void InitializeComponent()
-        {
-            lblServer = new Label();
-            txtServer = new TextBox();
-            lblDatabase = new Label();
-            txtDatabase = new TextBox();
-            grpAuthentication = new GroupBox();
-            rbWindowsAuth = new RadioButton();
-            rbSqlAuth = new RadioButton();
-            lblUsername = new Label();
-            txtUsername = new TextBox();
-            lblPassword = new Label();
-            txtPassword = new TextBox();
-            btnTest = new Button();
-            lblStatus = new Label();
-            btnOK = new Button();
-            chkTrustServerCertificate = new CheckBox();
-            btnCancel = new Button();
-            grpAuthentication.SuspendLayout();
-            SuspendLayout();
-            // 
-            // lblServer
-            // 
-            lblServer.AutoSize = true;
-            lblServer.Location = new Point(20, 20);
-            lblServer.Name = "lblServer";
-            lblServer.Size = new Size(42, 15);
-            lblServer.TabIndex = 0;
-            lblServer.Text = "Server:";
-            // 
-            // txtServer
-            // 
-            txtServer.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            txtServer.Location = new Point(120, 17);
-            txtServer.Name = "txtServer";
-            txtServer.Size = new Size(285, 23);
-            txtServer.TabIndex = 1;
+	private void InitializeComponent()
+	{
+		lblServer = new();
+		txtServer = new();
+		lblDatabase = new();
+		txtDatabase = new();
+		grpAuthentication = new();
+		rbWindowsAuth = new();
+		rbSqlAuth = new();
+		lblUsername = new();
+		txtUsername = new();
+		lblPassword = new();
+		txtPassword = new();
+		btnTest = new();
+		lblStatus = new();
+		btnOK = new();
+		chkTrustServerCertificate = new();
+		btnCancel = new();
+		grpAuthentication.SuspendLayout();
+		SuspendLayout();
+		//
+		// lblServer
+		//
+		lblServer.AutoSize = true;
+		lblServer.Location = new Point(20, 20);
+		lblServer.Name = "lblServer";
+		lblServer.Size = new Size(42, 15);
+		lblServer.TabIndex = 0;
+		lblServer.Text = "Server:";
+		//
+		// txtServer
+		//
+		txtServer.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+		txtServer.Location = new Point(120, 17);
+		txtServer.Name = "txtServer";
+		txtServer.Size = new Size(285, 23);
+		txtServer.TabIndex = 1;
             // 
             // lblDatabase
             // 
@@ -239,27 +240,27 @@ namespace Shape2SqlServer
             PerformLayout();
         }
 
-        private void LoadConnectionString()
+	private void LoadConnectionString()
+	{
+		if (!string.IsNullOrEmpty(ConnectionString))
 		{
-			if (!string.IsNullOrEmpty(ConnectionString))
+			try
 			{
-				try
-				{
-					var builder = new SqlConnectionStringBuilder(ConnectionString);
-					txtServer.Text = builder.DataSource;
-					txtDatabase.Text = builder.InitialCatalog;
-					rbWindowsAuth.Checked = builder.IntegratedSecurity;
-					rbSqlAuth.Checked = !builder.IntegratedSecurity;
-					txtUsername.Text = builder.UserID;
-					txtPassword.Text = builder.Password;
-					chkTrustServerCertificate.Checked = builder.TrustServerCertificate;
-				}
-				catch
-				{
-					// If connection string is invalid, just leave fields empty
-				}
+				SqlConnectionStringBuilder builder = new(ConnectionString);
+				txtServer.Text = builder.DataSource ?? "";
+				txtDatabase.Text = builder.InitialCatalog ?? "";
+				rbWindowsAuth.Checked = builder.IntegratedSecurity;
+				rbSqlAuth.Checked = !builder.IntegratedSecurity;
+				txtUsername.Text = builder.UserID ?? "";
+				txtPassword.Text = builder.Password ?? "";
+				chkTrustServerCertificate.Checked = builder.TrustServerCertificate;
+			}
+			catch
+			{
+				// If connection string is invalid, just leave fields empty
 			}
 		}
+	}
 
 	private void LoadSettings()
 	{
@@ -292,69 +293,66 @@ namespace Shape2SqlServer
 		Properties.Settings.Default.Save();
 	}
 
-		private void rbWindowsAuth_CheckedChanged(object sender, EventArgs e)
+	private void rbWindowsAuth_CheckedChanged(object? sender, EventArgs e)
+	{
+		bool sqlAuth = !rbWindowsAuth.Checked;
+		lblUsername.Enabled = sqlAuth;
+		txtUsername.Enabled = sqlAuth;
+		lblPassword.Enabled = sqlAuth;
+		txtPassword.Enabled = sqlAuth;
+	}
+
+	private void rbSqlAuth_CheckedChanged(object? sender, EventArgs e)
+	{
+		bool sqlAuth = rbSqlAuth.Checked;
+		lblUsername.Enabled = sqlAuth;
+		txtUsername.Enabled = sqlAuth;
+		lblPassword.Enabled = sqlAuth;
+		txtPassword.Enabled = sqlAuth;
+	}
+
+	private void btnTest_Click(object? sender, EventArgs e)
+	{
+		try
 		{
-			bool sqlAuth = !rbWindowsAuth.Checked;
-			lblUsername.Enabled = sqlAuth;
-			txtUsername.Enabled = sqlAuth;
-			lblPassword.Enabled = sqlAuth;
-			txtPassword.Enabled = sqlAuth;
+			lblStatus.Text = "Testing connection...";
+			lblStatus.ForeColor = Color.Black;
+			Application.DoEvents();
+
+			using SqlConnection conn = new(BuildConnectionString());
+			conn.Open();
+			lblStatus.Text = "Connection successful!";
+			lblStatus.ForeColor = Color.Green;
+		}
+		catch (Exception ex)
+		{
+			lblStatus.Text = $"Connection failed: {ex.Message}";
+			lblStatus.ForeColor = Color.Red;
+		}
+	}
+
+	private void btnOK_Click(object? sender, EventArgs e)
+	{
+		SaveSettings();
+		ConnectionString = BuildConnectionString();
+	}
+
+	private string BuildConnectionString()
+	{
+		SqlConnectionStringBuilder builder = new()
+		{
+			DataSource = txtServer.Text,
+			InitialCatalog = txtDatabase.Text,
+			IntegratedSecurity = rbWindowsAuth.Checked,
+			TrustServerCertificate = chkTrustServerCertificate.Checked
+		};
+
+		if (rbSqlAuth.Checked)
+		{
+			builder.UserID = txtUsername.Text;
+			builder.Password = txtPassword.Text;
 		}
 
-		private void rbSqlAuth_CheckedChanged(object sender, EventArgs e)
-		{
-			bool sqlAuth = rbSqlAuth.Checked;
-			lblUsername.Enabled = sqlAuth;
-			txtUsername.Enabled = sqlAuth;
-			lblPassword.Enabled = sqlAuth;
-			txtPassword.Enabled = sqlAuth;
-		}
-
-		private void btnTest_Click(object sender, EventArgs e)
-		{
-			try
-			{
-				lblStatus.Text = "Testing connection...";
-				lblStatus.ForeColor = Color.Black;
-				Application.DoEvents();
-
-				using (var conn = new SqlConnection(BuildConnectionString()))
-				{
-					conn.Open();
-					lblStatus.Text = "Connection successful!";
-					lblStatus.ForeColor = Color.Green;
-				}
-			}
-			catch (Exception ex)
-			{
-				lblStatus.Text = $"Connection failed: {ex.Message}";
-				lblStatus.ForeColor = Color.Red;
-			}
-		}
-
-		private void btnOK_Click(object sender, EventArgs e)
-		{
-			SaveSettings();
-			ConnectionString = BuildConnectionString();
-		}
-
-		private string BuildConnectionString()
-		{
-			var builder = new SqlConnectionStringBuilder
-			{
-				DataSource = txtServer.Text,
-				InitialCatalog = txtDatabase.Text,
-				IntegratedSecurity = rbWindowsAuth.Checked,
-				TrustServerCertificate = chkTrustServerCertificate.Checked
-			};
-
-			if (rbSqlAuth.Checked)
-			{
-				builder.UserID = txtUsername.Text;
-				builder.Password = txtPassword.Text;
-			}
-
-			return builder.ConnectionString;
-		}
+		return builder.ConnectionString;
 	}
 }
