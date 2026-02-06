@@ -202,5 +202,17 @@ namespace Shape2SqlServer.Properties {
                 this["sqlTrustServerCertificate"] = value;
             }
         }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool createSpatialIndex {
+            get {
+                return ((bool)(this["createSpatialIndex"]));
+            }
+            set {
+                this["createSpatialIndex"] = value;
+            }
+        }
     }
 }

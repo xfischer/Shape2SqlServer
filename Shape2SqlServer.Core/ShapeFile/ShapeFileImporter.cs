@@ -140,17 +140,19 @@ public sealed class ShapeFileImporter
     /// <param name="IdColName">Name of the primary key field</param>
     /// <param name="fieldsToImport">List of fields to import</param>
     /// <param name="geomcolName">Name of the geometry column</param>
+    /// <param name="createSpatialIndex">Whether to create a spatial index after import</param>
     public void ImportShapeFile(string connectionString,
-                                                            string? targetCoordSystem,
-                                                            bool recreateTable,
-                                                            enSpatialType spatialType,
-                                                            int SRID,
-                                                            string tableName,
-                                                            string schema,
-                                                            string IdColName,
-                                                            string geomcolName,
-                                                            List<string> fieldsToImport)
-    {
+                                string? targetCoordSystem,
+                                bool recreateTable,
+                                enSpatialType spatialType,
+                                int SRID,
+                                string tableName,
+                                string schema,
+                                string IdColName,
+                                string geomcolName,
+                                List<string> fieldsToImport,
+                                bool createSpatialIndex = true)
+{
         _worker = new();
         _worker.WorkerSupportsCancellation = true;
         _worker.WorkerReportsProgress = true;
@@ -388,18 +390,21 @@ public sealed class ShapeFileImporter
                             }
                             else
                             {
-                                #region Create spatial index
+                                if (createSpatialIndex)
+                                {
+                                    #region Create spatial index
 
-                                _logger.LogInformation("Create spatial index");
-                                _worker.ReportProgress(100, "Creating index...");
+                                    _logger.LogInformation("Create spatial index");
+                                    _worker.ReportProgress(100, "Creating index...");
 
-                                // Create spatial index
-                                string sqlScriptCreateIndex = SqlServerModel.GenerateCreateSpatialIndexScript(tableName, schema, geomcolName, SqlServerHelper.GetBoundingBox(Bounds!), spatialType, enSpatialIndexGridDensity.MEDIUM);
-                                SqlCommand v_createdIndexcmd = new(sqlScriptCreateIndex, db, transaction);
-                                v_createdIndexcmd.CommandTimeout = 3600;
-                                v_createdIndexcmd.ExecuteNonQuery();
+                                    // Create spatial index
+                                    string sqlScriptCreateIndex = SqlServerModel.GenerateCreateSpatialIndexScript(tableName, schema, geomcolName, SqlServerHelper.GetBoundingBox(Bounds!), spatialType, enSpatialIndexGridDensity.MEDIUM);
+                                    SqlCommand v_createdIndexcmd = new(sqlScriptCreateIndex, db, transaction);
+                                    v_createdIndexcmd.CommandTimeout = 3600;
+                                    v_createdIndexcmd.ExecuteNonQuery();
 
-                                #endregion
+                                    #endregion
+                                }
 
                                 _logger.LogInformation("Commit transaction");
                                 transaction.Commit();
@@ -451,6 +456,7 @@ public sealed class ShapeFileImporter
     /// <param name="IdColName"></param>
     /// <param name="geomcolName"></param>
     /// <param name="fieldsToImport"></param>
+    /// <param name="createSpatialIndex">Whether to create a spatial index after import</param>
     public void ImportShapeFile_Direct(string connectionString,
                                                             string? targetCoordSystem,
                                                             bool recreateTable,
@@ -460,7 +466,8 @@ public sealed class ShapeFileImporter
                                                             string schema,
                                                             string IdColName,
                                                             string geomcolName,
-                                                            List<string> fieldsToImport)
+                                                            List<string> fieldsToImport,
+                                                            bool createSpatialIndex = true)
     {
         _worker = new();
         _worker.WorkerSupportsCancellation = true;
@@ -584,19 +591,22 @@ public sealed class ShapeFileImporter
                                 }
                                 else
                                 {
-                                    #region Create spatial index
+                                    if (createSpatialIndex)
+                                    {
+                                        #region Create spatial index
 
-                                    _logger.LogInformation("Creating spatial index...");
-                                    _worker.ReportProgress(100, "Creating index...");
+                                        _logger.LogInformation("Creating spatial index...");
+                                        _worker.ReportProgress(100, "Creating index...");
 
-                                    // Create spatial index
-                                    Envelope bounds = ShapeFileHelper.ReprojectEnvelope(_transform, Bounds!);
-                                    string sqlScriptCreateIndex = SqlServerModel.GenerateCreateSpatialIndexScript(tableName, schema, geomcolName, SqlServerHelper.GetBoundingBox(bounds), spatialType, enSpatialIndexGridDensity.MEDIUM);
-                                    SqlCommand v_createdIndexcmd = new(sqlScriptCreateIndex, db, transaction);
-                                    v_createdIndexcmd.CommandTimeout = 3600;
-                                    v_createdIndexcmd.ExecuteNonQuery();
+                                        // Create spatial index
+                                        Envelope bounds = ShapeFileHelper.ReprojectEnvelope(_transform, Bounds!);
+                                        string sqlScriptCreateIndex = SqlServerModel.GenerateCreateSpatialIndexScript(tableName, schema, geomcolName, SqlServerHelper.GetBoundingBox(bounds), spatialType, enSpatialIndexGridDensity.MEDIUM);
+                                        SqlCommand v_createdIndexcmd = new(sqlScriptCreateIndex, db, transaction);
+                                        v_createdIndexcmd.CommandTimeout = 3600;
+                                        v_createdIndexcmd.ExecuteNonQuery();
 
-                                    #endregion
+                                        #endregion
+                                    }
 
                                     _logger.LogInformation("Commit transaction");
                                     transaction.Commit();

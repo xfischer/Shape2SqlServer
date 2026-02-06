@@ -54,6 +54,7 @@ partial class frmMain
             this.lnkCSSelector = new System.Windows.Forms.LinkLabel();
             this.txtSrid = new System.Windows.Forms.TextBox();
             this.chkSRID = new System.Windows.Forms.CheckBox();
+            this.chkCreateSpatialIndex = new System.Windows.Forms.CheckBox();
             this.txtCoordSys = new System.Windows.Forms.TextBox();
             this.radGeog = new System.Windows.Forms.RadioButton();
             this.radGeom = new System.Windows.Forms.RadioButton();
@@ -252,6 +253,7 @@ partial class frmMain
             this.groupBox2.Controls.Add(this.lnkCSSelector);
             this.groupBox2.Controls.Add(this.txtSrid);
             this.groupBox2.Controls.Add(this.chkSRID);
+            this.groupBox2.Controls.Add(this.chkCreateSpatialIndex);
             this.groupBox2.Controls.Add(this.txtCoordSys);
             this.groupBox2.Controls.Add(this.radGeog);
             this.groupBox2.Controls.Add(this.radGeom);
@@ -299,7 +301,7 @@ partial class frmMain
             this.txtSrid.Text = "4326";
             // 
             // chkSRID
-            // 
+            //
             this.chkSRID.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.chkSRID.AutoSize = true;
             this.chkSRID.Location = new System.Drawing.Point(15, 154);
@@ -309,7 +311,20 @@ partial class frmMain
             this.chkSRID.Text = "Set SRID";
             this.chkSRID.UseVisualStyleBackColor = true;
             this.chkSRID.CheckedChanged += new System.EventHandler(this.chkSRID_CheckedChanged);
-            // 
+            //
+            // chkCreateSpatialIndex
+            //
+            this.chkCreateSpatialIndex.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.chkCreateSpatialIndex.AutoSize = true;
+            this.chkCreateSpatialIndex.Checked = true;
+            this.chkCreateSpatialIndex.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkCreateSpatialIndex.Location = new System.Drawing.Point(15, 177);
+            this.chkCreateSpatialIndex.Name = "chkCreateSpatialIndex";
+            this.chkCreateSpatialIndex.Size = new System.Drawing.Size(126, 17);
+            this.chkCreateSpatialIndex.TabIndex = 20;
+            this.chkCreateSpatialIndex.Text = "Create spatial index";
+            this.chkCreateSpatialIndex.UseVisualStyleBackColor = true;
+            //
             // txtCoordSys
             // 
             this.txtCoordSys.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -504,5 +519,6 @@ partial class frmMain
 	private System.Windows.Forms.RadioButton radBoth = null!;
 	private System.Windows.Forms.TextBox txtSchema = null!;
 	private System.Windows.Forms.Label label3 = null!;
+	private System.Windows.Forms.CheckBox chkCreateSpatialIndex = null!;
 }
 

@@ -104,6 +104,7 @@ public partial class frmMain : Form
 		chkSRID.Checked = Properties.Settings.Default.setSRID;
 		txtSrid.Text = Properties.Settings.Default.SRID ?? "";
 		txtSchema.Text = Properties.Settings.Default.schema ?? "";
+		chkCreateSpatialIndex.Checked = Properties.Settings.Default.createSpatialIndex;
 
 		switch ((enSpatialType)Properties.Settings.Default.useGeography)
 		{
@@ -130,6 +131,7 @@ public partial class frmMain : Form
 		Properties.Settings.Default.setSRID = chkSRID.Checked;
 		Properties.Settings.Default.SRID = txtSrid.Text;
 		Properties.Settings.Default.schema = txtSchema.Text;
+		Properties.Settings.Default.createSpatialIndex = chkCreateSpatialIndex.Checked;
 		Properties.Settings.Default.useGeography = radGeog.Checked ? (int)enSpatialType.geography
 			: radGeom.Checked ? (int)enSpatialType.geometry
 			: (int)enSpatialType.both;
@@ -234,7 +236,8 @@ public partial class frmMain : Form
 					txtSchema.Text,
 					txtIDCol.Text,
 					txtGeomCol.Text,
-					selectedFields);
+					selectedFields,
+					chkCreateSpatialIndex.Checked);
 			else
 				_importer.ImportShapeFile_Direct(
 					txtConString.Text,
@@ -246,7 +249,8 @@ public partial class frmMain : Form
 					txtSchema.Text,
 					txtIDCol.Text,
 					txtGeomCol.Text,
-					selectedFields);
+					selectedFields,
+					chkCreateSpatialIndex.Checked);
 		}
 		catch (Exception ex)
 		{
