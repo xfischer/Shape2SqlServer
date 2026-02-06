@@ -132,9 +132,12 @@ public partial class frmMain : Form
 		Properties.Settings.Default.SRID = txtSrid.Text;
 		Properties.Settings.Default.schema = txtSchema.Text;
 		Properties.Settings.Default.createSpatialIndex = chkCreateSpatialIndex.Checked;
-		Properties.Settings.Default.useGeography = radGeog.Checked ? (int)enSpatialType.geography
-			: radGeom.Checked ? (int)enSpatialType.geometry
-			: (int)enSpatialType.both;
+		Properties.Settings.Default.useGeography = (radGeog.Checked, radGeom.Checked) switch
+		{
+			(true, _) => (int)enSpatialType.geography,
+			(false, true) => (int)enSpatialType.geometry,
+			_ => (int)enSpatialType.both
+		};
 		Properties.Settings.Default.Save();
 	}
 

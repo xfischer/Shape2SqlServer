@@ -35,7 +35,7 @@ internal static class SqlServerHelper
 								REVERSE_GEOMETRIES = true;
 						}
 
-						SqlServerBytesWriter geoWriter = new();
+						SqlServerBytesWriter geoWriter = new() { IsGeography = true };
 						SqlGeography? v_geog = null;
 						if (REVERSE_GEOMETRIES.GetValueOrDefault(false))
 							v_geog = SqlGeography.Deserialize(new SqlBytes(geoWriter.Write(geom.Reverse())));

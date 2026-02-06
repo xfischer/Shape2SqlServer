@@ -151,26 +151,17 @@ internal class ShapeFileReaderBulk : IEnumerable, IDataReader, IDataRecord
 
     public double GetDouble(int i) => _shapeFileDataReader.GetDouble(i);
 
-    public Type GetFieldType(int i)
-    {
-        Type? ret;
-
-        if (i >= _shapeFileDataReader.FieldCount)
-        {
-            if (_spatialType == enSpatialType.both)
+    public Type GetFieldType(int i) =>
+        i >= _shapeFileDataReader.FieldCount
+            ? (_spatialType, i == _shapeFileDataReader.FieldCount + 1) switch
             {
-                ret = (i == _shapeFileDataReader.FieldCount + 1) ? typeof(SqlGeography) : typeof(SqlGeometry);
+                (enSpatialType.both, true) => typeof(SqlGeography),
+                (enSpatialType.both, false) => typeof(SqlGeometry),
+                (enSpatialType.geography, _) => typeof(SqlGeography),
+                (enSpatialType.geometry, _) => typeof(SqlGeometry),
+                _ => throw new InvalidOperationException($"Unexpected spatial type: {_spatialType}")
             }
-            else
-            {
-                ret = _spatialType == enSpatialType.geography ? typeof(SqlGeography) : typeof(SqlGeometry);
-            }
-        }
-        else
-            ret = _shapeFileDataReader.GetFieldType(i);
-
-        return ret;
-    }
+            : _shapeFileDataReader.GetFieldType(i);
 
     public float GetFloat(int i) => _shapeFileDataReader.GetFloat(i);
 

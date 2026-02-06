@@ -57,9 +57,16 @@ internal sealed class SqlServerModel
 		}
 
 		// primary key
-		builder.AppendFormat("PRIMARY KEY CLUSTERED ( [{0}] ASC) WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, "
-																														+ "IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY]) ON [PRIMARY]"
-																														, idColName);
+		builder.Append($"""
+			PRIMARY KEY CLUSTERED ( [{idColName}] ASC) WITH (
+				PAD_INDEX = OFF,
+				STATISTICS_NORECOMPUTE = OFF,
+				IGNORE_DUP_KEY = OFF,
+				ALLOW_ROW_LOCKS = ON,
+				ALLOW_PAGE_LOCKS = ON
+			) ON [PRIMARY]
+			) ON [PRIMARY]
+			""");
 
 		return builder.ToString();
 	}
@@ -176,42 +183,88 @@ internal sealed class SqlServerModel
 		switch (spatialType)
 		{
 			case enSpatialType.geography:
-				return string.Format("CREATE SPATIAL INDEX [IDX_{0}] ON {1} ( [{0}] ) USING  GEOGRAPHY_GRID WITH "
-																																	+ " ( GRIDS =(LEVEL_1 = {2},LEVEL_2 = {2},LEVEL_3 = {2},LEVEL_4 = {2}), "
-																																	+ "CELLS_PER_OBJECT = 16, PAD_INDEX  = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY]"
-																																	, geomColumnName
-																																	, tableName
-																																	, defaultGridDensity);
+				return $"""
+					CREATE SPATIAL INDEX [IDX_{geomColumnName}] ON {tableName} ( [{geomColumnName}] )
+					USING GEOGRAPHY_GRID WITH (
+						GRIDS = (
+							LEVEL_1 = {defaultGridDensity},
+							LEVEL_2 = {defaultGridDensity},
+							LEVEL_3 = {defaultGridDensity},
+							LEVEL_4 = {defaultGridDensity}
+						),
+						CELLS_PER_OBJECT = 16,
+						PAD_INDEX = OFF,
+						SORT_IN_TEMPDB = OFF,
+						DROP_EXISTING = OFF,
+						ALLOW_ROW_LOCKS = ON,
+						ALLOW_PAGE_LOCKS = ON
+					) ON [PRIMARY]
+					""";
 			case enSpatialType.geometry:
-				return string.Format("CREATE SPATIAL INDEX [IDX_{0}] ON {1} ( [{0}] ) USING  GEOMETRY_GRID WITH "
-																															+ " ( BOUNDING_BOX =({2}, {3}, {4}, {5}), GRIDS =(LEVEL_1 = {6},LEVEL_2 = {6},LEVEL_3 = {6},LEVEL_4 = {6}), "
-																															+ "CELLS_PER_OBJECT = 16, PAD_INDEX  = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY]"
-																															, geomColumnName
-																															, tableName
-																															, Convert.ToString(geoBounds.minX, CultureInfo.InvariantCulture)
-																															, Convert.ToString(geoBounds.minY, CultureInfo.InvariantCulture)
-																															, Convert.ToString(geoBounds.maxX, CultureInfo.InvariantCulture)
-																															, Convert.ToString(geoBounds.maxY, CultureInfo.InvariantCulture)
-																															, defaultGridDensity);
+				return $"""
+					CREATE SPATIAL INDEX [IDX_{geomColumnName}] ON {tableName} ( [{geomColumnName}] )
+					USING GEOMETRY_GRID WITH (
+						BOUNDING_BOX = (
+							{Convert.ToString(geoBounds.MinX, CultureInfo.InvariantCulture)},
+							{Convert.ToString(geoBounds.MinY, CultureInfo.InvariantCulture)},
+							{Convert.ToString(geoBounds.MaxX, CultureInfo.InvariantCulture)},
+							{Convert.ToString(geoBounds.MaxY, CultureInfo.InvariantCulture)}
+						),
+						GRIDS = (
+							LEVEL_1 = {defaultGridDensity},
+							LEVEL_2 = {defaultGridDensity},
+							LEVEL_3 = {defaultGridDensity},
+							LEVEL_4 = {defaultGridDensity}
+						),
+						CELLS_PER_OBJECT = 16,
+						PAD_INDEX = OFF,
+						SORT_IN_TEMPDB = OFF,
+						DROP_EXISTING = OFF,
+						ALLOW_ROW_LOCKS = ON,
+						ALLOW_PAGE_LOCKS = ON
+					) ON [PRIMARY]
+					""";
 
 			case enSpatialType.both:
-				return string.Format("CREATE SPATIAL INDEX [IDX_{0}] ON {1} ( [{0}] ) USING  GEOGRAPHY_GRID WITH "
-																																	+ " ( GRIDS =(LEVEL_1 = {2},LEVEL_2 = {2},LEVEL_3 = {2},LEVEL_4 = {2}), "
-																																	+ "CELLS_PER_OBJECT = 16, PAD_INDEX  = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY]"
-																																	, geomColumnName + "_geog"
-																																	, tableName
-																																	, defaultGridDensity)
-												+
-												string.Format("CREATE SPATIAL INDEX [IDX_{0}] ON {1} ( [{0}] ) USING  GEOMETRY_GRID WITH "
-																															+ " ( BOUNDING_BOX =({2}, {3}, {4}, {5}), GRIDS =(LEVEL_1 = {6},LEVEL_2 = {6},LEVEL_3 = {6},LEVEL_4 = {6}), "
-																															+ "CELLS_PER_OBJECT = 16, PAD_INDEX  = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY]"
-																															, geomColumnName + "_geom"
-																															, tableName
-																															, Convert.ToString(geoBounds.minX, CultureInfo.InvariantCulture)
-																															, Convert.ToString(geoBounds.minY, CultureInfo.InvariantCulture)
-																															, Convert.ToString(geoBounds.maxX, CultureInfo.InvariantCulture)
-																															, Convert.ToString(geoBounds.maxY, CultureInfo.InvariantCulture)
-																															, defaultGridDensity);
+				return $"""
+					CREATE SPATIAL INDEX [IDX_{geomColumnName}_geog] ON {tableName} ( [{geomColumnName}_geog] )
+					USING GEOGRAPHY_GRID WITH (
+						GRIDS = (
+							LEVEL_1 = {defaultGridDensity},
+							LEVEL_2 = {defaultGridDensity},
+							LEVEL_3 = {defaultGridDensity},
+							LEVEL_4 = {defaultGridDensity}
+						),
+						CELLS_PER_OBJECT = 16,
+						PAD_INDEX = OFF,
+						SORT_IN_TEMPDB = OFF,
+						DROP_EXISTING = OFF,
+						ALLOW_ROW_LOCKS = ON,
+						ALLOW_PAGE_LOCKS = ON
+					) ON [PRIMARY]
+
+					CREATE SPATIAL INDEX [IDX_{geomColumnName}_geom] ON {tableName} ( [{geomColumnName}_geom] )
+					USING GEOMETRY_GRID WITH (
+						BOUNDING_BOX = (
+							{Convert.ToString(geoBounds.MinX, CultureInfo.InvariantCulture)},
+							{Convert.ToString(geoBounds.MinY, CultureInfo.InvariantCulture)},
+							{Convert.ToString(geoBounds.MaxX, CultureInfo.InvariantCulture)},
+							{Convert.ToString(geoBounds.MaxY, CultureInfo.InvariantCulture)}
+						),
+						GRIDS = (
+							LEVEL_1 = {defaultGridDensity},
+							LEVEL_2 = {defaultGridDensity},
+							LEVEL_3 = {defaultGridDensity},
+							LEVEL_4 = {defaultGridDensity}
+						),
+						CELLS_PER_OBJECT = 16,
+						PAD_INDEX = OFF,
+						SORT_IN_TEMPDB = OFF,
+						DROP_EXISTING = OFF,
+						ALLOW_ROW_LOCKS = ON,
+						ALLOW_PAGE_LOCKS = ON
+					) ON [PRIMARY]
+					""";
 			default: throw new NotImplementedException($"GenerateCreateSpatialIndexScript not implemented for {spatialType}");
 		}
 	}
