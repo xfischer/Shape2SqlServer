@@ -133,7 +133,7 @@ internal sealed class SqlServerModel
 	public static string CleanSQLName(string name) =>
 		System.Text.RegularExpressions.Regex.Replace(name, @"[^\w\.-_@]", "");
 
-	public static DataRow GetNewDataTableRow(DataTable dataTable, string tableName, List<object> sqlNativeGeomList, List<object> attributes)
+	public static DataRow GetNewDataTableRow(DataTable dataTable, string tableName, List<object?> sqlNativeGeomList, List<object> attributes)
 	{
 		// TODO use SMO to avoid SQL injection attacks
 		DataRow row = dataTable.NewRow();
@@ -168,7 +168,7 @@ internal sealed class SqlServerModel
 			? string.Format("[{0}]", tableName)
 			: string.Format("[{0}].[{1}]", schema, tableName);
 
-	public static string? GenerateCreateSpatialIndexScript(string shortTableName, string schema, string geomColumnName, BoundingBox geoBounds, enSpatialType spatialType, enSpatialIndexGridDensity gridDensity)
+	public static string GenerateCreateSpatialIndexScript(string shortTableName, string schema, string geomColumnName, BoundingBox geoBounds, enSpatialType spatialType, enSpatialIndexGridDensity gridDensity)
 	{
 		string defaultGridDensity = gridDensity.ToString();
 		string tableName = GenerateFullTableName(shortTableName, schema);
@@ -212,7 +212,7 @@ internal sealed class SqlServerModel
 																															, Convert.ToString(geoBounds.maxX, CultureInfo.InvariantCulture)
 																															, Convert.ToString(geoBounds.maxY, CultureInfo.InvariantCulture)
 																															, defaultGridDensity);
-			default: return null;
+			default: throw new NotImplementedException($"GenerateCreateSpatialIndexScript not implemented for {spatialType}");
 		}
 	}
 }

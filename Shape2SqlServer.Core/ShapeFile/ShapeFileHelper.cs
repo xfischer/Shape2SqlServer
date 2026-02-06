@@ -90,9 +90,9 @@ internal static class ShapeFileHelper
 	#region ShapeFile Reader converters
 
 	//TODO extract methods (reproject and shape2sql)
-	public static Geometry? ReprojectGeometry(Geometry geom, ICoordinateTransformation trans)
+	public static Geometry ReprojectGeometry(Geometry geom, ICoordinateTransformation trans)
 	{
-		Geometry? geomOut = null; // BUGGY GeometryTransform.TransformGeometry(GeometryFactory.Default, geom, trans.MathTransform);
+		Geometry geomOut = default!; // BUGGY GeometryTransform.TransformGeometry(GeometryFactory.Default, geom, trans.MathTransform);
 
 		switch (geom.OgcGeometryType)
 		{

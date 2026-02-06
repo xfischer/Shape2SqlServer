@@ -80,7 +80,7 @@ internal class ShapeFileReaderBulk : IEnumerable, IDataReader, IDataRecord
             v_ret = _shapeFileDataReader.GetValue(i);
         }
 
-        return v_ret;
+        return v_ret!;
     }
     #endregion
 

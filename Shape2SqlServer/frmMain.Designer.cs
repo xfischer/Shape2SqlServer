@@ -1,4 +1,4 @@
-﻿#nullable enable
+﻿#nullable disable
 
 namespace Shape2SqlServer;
 
@@ -7,7 +7,7 @@ partial class frmMain
 	/// <summary>
 	/// Variable nécessaire au concepteur.
 	/// </summary>
-	private System.ComponentModel.IContainer? components = null;
+	private System.ComponentModel.IContainer components = null;
 
 		/// <summary>
 		/// Nettoyage des ressources utilisées.

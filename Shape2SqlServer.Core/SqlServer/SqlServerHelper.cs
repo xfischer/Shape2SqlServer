@@ -15,7 +15,7 @@ internal static class SqlServerHelper
 		private const double INVALIDGEOM_REDUCE = 0.00000025d;
 		internal static bool? REVERSE_GEOMETRIES = null;
 
-		internal static object? ConvertToSqlType(Geometry geom, int SRID, bool useGeography, int curRowIndex, ILogger logger)
+		internal static object ConvertToSqlType(Geometry geom, int SRID, bool useGeography, int curRowIndex, ILogger logger)
 		{
 			object? v_ret = null;
 
