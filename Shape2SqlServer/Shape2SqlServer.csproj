@@ -13,6 +13,7 @@
     <Nullable>enable</Nullable>
     <AnalysisLevel>latest</AnalysisLevel>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+		<Version>10.0.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
