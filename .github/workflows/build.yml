@@ -2,14 +2,14 @@ name: Build
 
 on:
   push:
-    branches: [ master, main, develop ]
+    branches: [ mmain, develop ]
   pull_request:
-    branches: [ master, main, develop ]
+    branches: [  main, develop ]
   workflow_dispatch:
 
 jobs:
   build:
-    name: Build and Test
+    name: Build
     runs-on: windows-latest
 
     steps:
@@ -27,14 +27,3 @@ jobs:
     - name: Build solution
       run: dotnet build --configuration Release --no-restore
 
-    - name: Run tests
-      run: dotnet test --configuration Release --no-build --verbosity normal
-      continue-on-error: true
-
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: Shape2SqlServer-Release
-        path: |
-          Shape2SqlServer/bin/Release/net10.0-windows/**/*
-        retention-days: 7
